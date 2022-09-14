@@ -8,8 +8,8 @@ public class Compiler {
         final int stage = 1;
         String content = IOUtils.read("testfile.txt");
 
-        Lexer lexer = new Lexer(content);
-        lexer.analyze();
+        Lexer lexer = new Lexer();
+        lexer.analyze(content);
         if (stage == 1) {
             IOUtils.write(lexer.getLexAns(), "output.txt");
         }

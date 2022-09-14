@@ -12,15 +12,9 @@ import static java.lang.Character.isLetter;
 import static token.TokenType.*;
 
 public class Lexer {
-    private final String content; // 源代码
+    private static List<Token> tokens = new ArrayList<>(); // 词法分析结果
 
-    public static List<Token> tokens = new ArrayList<>(); // 词法分析结果
-
-    public Lexer(String content) {
-        this.content = content;
-    }
-
-    public void analyze() {
+    public void analyze(String content) {
         int lineNumber = 1; // 当前所在行数
         int contentLength = content.length(); // 源代码长度
 
