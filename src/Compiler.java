@@ -8,9 +8,9 @@ public class Compiler {
         final int stage = 1;
         String content = IOUtils.read("testfile.txt");
 
+        Lexer lexer = new Lexer(content);
+        lexer.analyze();
         if (stage == 1) {
-            Lexer lexer = new Lexer(content);
-            lexer.analyze();
             IOUtils.write(lexer.getLexAns(), "output.txt");
         }
     }
