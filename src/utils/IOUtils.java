@@ -1,6 +1,8 @@
 package utils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.StringJoiner;
 
@@ -9,7 +11,7 @@ public class IOUtils {
      * read from testfile.txt
      */
     public static String read(String filename) throws IOException {
-        InputStream in = new BufferedInputStream(new FileInputStream(filename));
+        InputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(filename)));
         Scanner scanner = new Scanner(in);
         StringJoiner stringJoiner = new StringJoiner("\n");
         while (scanner.hasNextLine()) {
