@@ -34,4 +34,9 @@ public class Token {
     public void setContent(String content) {
         this.content = content;
     }
+
+    @Override
+    public String toString() {
+        return type.toString() + " " + content + "\n";
+    }
 }

@@ -10,6 +10,8 @@ public class Compiler {
 
         if (stage == 1) {
             Lexer lexer = new Lexer(content);
+            lexer.analyze();
+            IOUtils.write(lexer.getLexAns(), "output.txt");
         }
     }
 }

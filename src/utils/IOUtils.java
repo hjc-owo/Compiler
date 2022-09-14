@@ -23,7 +23,7 @@ public class IOUtils {
     /**
      * output to output.txt
      */
-    public static void output(String content, String filename) {
+    public static void write(String content, String filename) {
         File outputFile = new File(filename);
         try (FileWriter writer = new FileWriter(outputFile)) {
             writer.write(content);
