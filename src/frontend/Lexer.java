@@ -25,7 +25,7 @@ public class Lexer {
                 // else if (isWhitespace(c)) continue; // 跳过空白字符
             else if (c == '_' || isLetter(c)) { // 标识符
                 String s = "";
-                for (int j = i; j < content.length(); j++) {
+                for (int j = i; j < contentLength; j++) {
                     char d = content.charAt(j);
                     if (d == '_' || isLetter(d) || isDigit(d)) s += d;
                     else {
@@ -36,7 +36,7 @@ public class Lexer {
                 tokens.add(new Token(getTK(s), lineNumber, s));
             } else if (isDigit(c)) { // 数字
                 String s = "";
-                for (int j = i; j < content.length(); j++) {
+                for (int j = i; j < contentLength; j++) {
                     char d = content.charAt(j);
                     if (isDigit(d)) s += d;
                     else {
@@ -47,7 +47,7 @@ public class Lexer {
                 tokens.add(new Token(INTCON, lineNumber, s));
             } else if (c == '\"') { // 字符串
                 String s = "\"";
-                for (int j = i + 1; j < content.length(); j++) {
+                for (int j = i + 1; j < contentLength; j++) {
                     char d = content.charAt(j);
                     if (d != '\"') s += d;
                     else {
@@ -83,10 +83,17 @@ public class Lexer {
                 char d = content.charAt(i + 1);
                 if (d == '/') { // //
                     int j = content.indexOf('\n', i + 2);
+                    lineNumber++;
                     i = j - 1;
                 } else if (d == '*') { // /* */
-                    int j = content.indexOf("*/", i + 2);
-                    i = j + 1;
+                    for (int j = i + 2; j < contentLength; j++) {
+                        char e = content.charAt(j);
+                        if (e == '\n') lineNumber++;
+                        else if (e == '*' && content.charAt(j + 1) == '/') {
+                            i = j + 1;
+                            break;
+                        }
+                    }
                 } else tokens.add(new Token(DIV, lineNumber, "/"));
             } else if (c == '%') { // %
                 tokens.add(new Token(MOD, lineNumber, "%"));
