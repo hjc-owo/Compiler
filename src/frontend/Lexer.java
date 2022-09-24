@@ -3,18 +3,35 @@ package frontend;
 import token.Token;
 import token.TokenType;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-
-import static java.lang.Character.isDigit;
-import static java.lang.Character.isLetter;
-import static token.TokenType.*;
+import java.util.Map;
 
 public class Lexer {
-    private static List<Token> tokens = new ArrayList<>(); // 词法分析结果
+    private List<Token> tokens;
+
+    private Map<String, TokenType> keywords = new HashMap<String, TokenType>() {{
+        put("main", TokenType.MAINTK);
+        put("const", TokenType.CONSTTK);
+        put("int", TokenType.INTTK);
+        put("break", TokenType.BREAKTK);
+        put("continue", TokenType.CONTINUETK);
+        put("if", TokenType.IFTK);
+        put("else", TokenType.ELSETK);
+        put("while", TokenType.WHILETK);
+        put("getint", TokenType.GETINTTK);
+        put("printf", TokenType.PRINTFTK);
+        put("return", TokenType.RETURNTK);
+        put("void", TokenType.VOIDTK);
+    }};
+
+    public Lexer(List<Token> tokens) {
+        this.tokens = tokens;
+    }
 
     public void analyze(String content) {
+        // initLexer();
+
         int lineNumber = 1; // 当前所在行数
         int contentLength = content.length(); // 源代码长度
 
@@ -23,28 +40,28 @@ public class Lexer {
             // System.out.print(c);
             if (c == '\n') lineNumber++;
                 // else if (isWhitespace(c)) continue; // 跳过空白字符
-            else if (c == '_' || isLetter(c)) { // 标识符
+            else if (c == '_' || Character.isLetter(c)) { // 标识符
                 String s = "";
                 for (int j = i; j < contentLength; j++) {
                     char d = content.charAt(j);
-                    if (d == '_' || isLetter(d) || isDigit(d)) s += d;
+                    if (d == '_' || Character.isLetter(d) || Character.isDigit(d)) s += d;
                     else {
                         i = j - 1;
                         break;
                     }
                 }
-                tokens.add(new Token(getTK(s), lineNumber, s));
-            } else if (isDigit(c)) { // 数字
+                tokens.add(new Token(keywords.getOrDefault(s, TokenType.IDENFR), lineNumber, s));
+            } else if (Character.isDigit(c)) { // 数字
                 String s = "";
                 for (int j = i; j < contentLength; j++) {
                     char d = content.charAt(j);
-                    if (isDigit(d)) s += d;
+                    if (Character.isDigit(d)) s += d;
                     else {
                         i = j - 1;
                         break;
                     }
                 }
-                tokens.add(new Token(INTCON, lineNumber, s));
+                tokens.add(new Token(TokenType.INTCON, lineNumber, s));
             } else if (c == '\"') { // 字符串
                 String s = "\"";
                 for (int j = i + 1; j < contentLength; j++) {
@@ -56,29 +73,29 @@ public class Lexer {
                         break;
                     }
                 }
-                tokens.add(new Token(STRCON, lineNumber, s));
+                tokens.add(new Token(TokenType.STRCON, lineNumber, s));
             } else if (c == '!') { // ! 或 !=
-                if (content.charAt(i + 1) != '=') tokens.add(new Token(NOT, lineNumber, "!"));
+                if (content.charAt(i + 1) != '=') tokens.add(new Token(TokenType.NOT, lineNumber, "!"));
                 else {
-                    tokens.add(new Token(NEQ, lineNumber, "!="));
+                    tokens.add(new Token(TokenType.NEQ, lineNumber, "!="));
                     i++;
                 }
             } else if (c == '&') { // &&
                 if (content.charAt(i + 1) == '&') {
-                    tokens.add(new Token(AND, lineNumber, "&&"));
+                    tokens.add(new Token(TokenType.AND, lineNumber, "&&"));
                     i++;
                 }
             } else if (c == '|') { // ||
                 if (content.charAt(i + 1) == '|') {
-                    tokens.add(new Token(OR, lineNumber, "||"));
+                    tokens.add(new Token(TokenType.OR, lineNumber, "||"));
                     i++;
                 }
             } else if (c == '+') { // +
-                tokens.add(new Token(PLUS, lineNumber, "+"));
+                tokens.add(new Token(TokenType.PLUS, lineNumber, "+"));
             } else if (c == '-') { // -
-                tokens.add(new Token(MINU, lineNumber, "-"));
+                tokens.add(new Token(TokenType.MINU, lineNumber, "-"));
             } else if (c == '*') { // *
-                tokens.add(new Token(MULT, lineNumber, "*"));
+                tokens.add(new Token(TokenType.MULT, lineNumber, "*"));
             } else if (c == '/') { // / 或 // 或 /*
                 char d = content.charAt(i + 1);
                 if (d == '/') { // //
@@ -94,55 +111,39 @@ public class Lexer {
                             break;
                         }
                     }
-                } else tokens.add(new Token(DIV, lineNumber, "/"));
+                } else tokens.add(new Token(TokenType.DIV, lineNumber, "/"));
             } else if (c == '%') { // %
-                tokens.add(new Token(MOD, lineNumber, "%"));
+                tokens.add(new Token(TokenType.MOD, lineNumber, "%"));
             } else if (c == '<') { // < 或 <=
                 if (content.charAt(i + 1) != '=') { // <
-                    tokens.add(new Token(LSS, lineNumber, "<"));
+                    tokens.add(new Token(TokenType.LSS, lineNumber, "<"));
                 } else {
-                    tokens.add(new Token(LEQ, lineNumber, "<="));
+                    tokens.add(new Token(TokenType.LEQ, lineNumber, "<="));
                     i++;
                 }
             } else if (c == '>') { // > 或 >=
                 if (content.charAt(i + 1) != '=') { // >
-                    tokens.add(new Token(GRE, lineNumber, ">"));
+                    tokens.add(new Token(TokenType.GRE, lineNumber, ">"));
                 } else {
-                    tokens.add(new Token(GEQ, lineNumber, ">="));
+                    tokens.add(new Token(TokenType.GEQ, lineNumber, ">="));
                     i++;
                 }
             } else if (c == '=') { // = 或 ==
-                if (content.charAt(i + 1) != '=') tokens.add(new Token(ASSIGN, lineNumber, "="));
+                if (content.charAt(i + 1) != '=') tokens.add(new Token(TokenType.ASSIGN, lineNumber, "="));
                 else {
-                    tokens.add(new Token(EQL, lineNumber, "=="));
+                    tokens.add(new Token(TokenType.EQL, lineNumber, "=="));
                     i++;
                 }
-            } else if (c == ';') tokens.add(new Token(SEMICN, lineNumber, ";"));
-            else if (c == ',') tokens.add(new Token(COMMA, lineNumber, ","));
-            else if (c == '(') tokens.add(new Token(LPARENT, lineNumber, "("));
-            else if (c == ')') tokens.add(new Token(RPARENT, lineNumber, ")"));
-            else if (c == '[') tokens.add(new Token(LBRACK, lineNumber, "["));
-            else if (c == ']') tokens.add(new Token(RBRACK, lineNumber, "]"));
-            else if (c == '{') tokens.add(new Token(LBRACE, lineNumber, "{"));
-            else if (c == '}') tokens.add(new Token(RBRACE, lineNumber, "}"));
+            } else if (c == ';') tokens.add(new Token(TokenType.SEMICN, lineNumber, ";"));
+            else if (c == ',') tokens.add(new Token(TokenType.COMMA, lineNumber, ","));
+            else if (c == '(') tokens.add(new Token(TokenType.LPARENT, lineNumber, "("));
+            else if (c == ')') tokens.add(new Token(TokenType.RPARENT, lineNumber, ")"));
+            else if (c == '[') tokens.add(new Token(TokenType.LBRACK, lineNumber, "["));
+            else if (c == ']') tokens.add(new Token(TokenType.RBRACK, lineNumber, "]"));
+            else if (c == '{') tokens.add(new Token(TokenType.LBRACE, lineNumber, "{"));
+            else if (c == '}') tokens.add(new Token(TokenType.RBRACE, lineNumber, "}"));
         }
 
-    }
-
-    public TokenType getTK(String word) {
-        if (Objects.equals(word, "main")) return MAINTK;
-        else if (Objects.equals(word, "const")) return CONSTTK;
-        else if (Objects.equals(word, "int")) return INTTK;
-        else if (Objects.equals(word, "break")) return BREAKTK;
-        else if (Objects.equals(word, "continue")) return CONTINUETK;
-        else if (Objects.equals(word, "if")) return IFTK;
-        else if (Objects.equals(word, "else")) return ELSETK;
-        else if (Objects.equals(word, "while")) return WHILETK;
-        else if (Objects.equals(word, "getint")) return GETINTTK;
-        else if (Objects.equals(word, "printf")) return PRINTFTK;
-        else if (Objects.equals(word, "return")) return RETURNTK;
-        else if (Objects.equals(word, "void")) return VOIDTK;
-        else return IDENFR;
     }
 
     public String getLexAns() {
