@@ -2,6 +2,7 @@ package frontend;
 
 import token.Token;
 import token.TokenType;
+import utils.IOUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,16 +31,13 @@ public class Lexer {
     }
 
     public void analyze(String content) {
-        // initLexer();
 
         int lineNumber = 1; // 当前所在行数
         int contentLength = content.length(); // 源代码长度
 
         for (int i = 0; i < contentLength; i++) {
             char c = content.charAt(i);
-            // System.out.print(c);
             if (c == '\n') lineNumber++;
-                // else if (isWhitespace(c)) continue; // 跳过空白字符
             else if (c == '_' || Character.isLetter(c)) { // 标识符
                 String s = "";
                 for (int j = i; j < contentLength; j++) {
@@ -100,7 +98,6 @@ public class Lexer {
                 char d = content.charAt(i + 1);
                 if (d == '/') { // //
                     int j = content.indexOf('\n', i + 2);
-                    lineNumber++;
                     i = j - 1;
                 } else if (d == '*') { // /* */
                     for (int j = i + 2; j < contentLength; j++) {
@@ -146,11 +143,9 @@ public class Lexer {
 
     }
 
-    public String getLexAns() {
-        StringBuilder ans = new StringBuilder();
+    public void printLexAns() {
         for (Token token : tokens) {
-            ans.append(token.toString());
+            IOUtils.write(token.toString());
         }
-        return ans.toString();
     }
 }

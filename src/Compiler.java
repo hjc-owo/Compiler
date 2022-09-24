@@ -1,4 +1,5 @@
 import frontend.Lexer;
+import frontend.Parser;
 import token.Token;
 import utils.IOUtils;
 
@@ -10,13 +11,20 @@ public class Compiler {
     private static List<Token> tokens = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
-        final int stage = 1;
+        final int stage = 2;
+        IOUtils.delete("output.txt");
         String content = IOUtils.read("testfile.txt");
 
         Lexer lexer = new Lexer(tokens);
         lexer.analyze(content);
         if (stage == 1) {
-            IOUtils.write(lexer.getLexAns(), "output.txt");
+            lexer.printLexAns();
+        }
+
+        Parser parser = new Parser(tokens);
+        parser.analyze();
+        if (stage == 2) {
+            parser.printParseAns();
         }
     }
 }

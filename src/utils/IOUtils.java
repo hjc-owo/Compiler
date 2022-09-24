@@ -25,12 +25,28 @@ public class IOUtils {
     /**
      * output to output.txt
      */
-    public static void write(String content, String filename) {
-        File outputFile = new File(filename);
-        try (FileWriter writer = new FileWriter(outputFile)) {
+    public static void write(String content) {
+        File outputFile = new File("output.txt");
+        try (FileWriter writer = new FileWriter(outputFile, true)) {
             writer.write(content);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void write(String content, String filename) {
+        File outputFile = new File(filename);
+        try (FileWriter writer = new FileWriter(outputFile, true)) {
+            writer.write(content);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void delete(String filename) {
+        File file = new File(filename);
+        if (file.exists()) {
+            file.delete();
         }
     }
 }
