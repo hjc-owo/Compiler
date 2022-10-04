@@ -2,7 +2,6 @@ package node;
 
 import frontend.Parser;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -11,17 +10,19 @@ public class LOrExpNode {
     // LOrExp -> LAndExp | LOrExp '||' LAndExp
 
     private List<LAndExpNode> lAndExpNodes;
+    private List<Token> orTokens;
 
-    public LOrExpNode(List<LAndExpNode> lAndExpNodes) {
+    public LOrExpNode(List<LAndExpNode> lAndExpNodes, List<Token> orTokens) {
         this.lAndExpNodes = lAndExpNodes;
+        this.orTokens = orTokens;
     }
 
     public void print() {
         for (int i = 0; i < lAndExpNodes.size(); i++) {
             lAndExpNodes.get(i).print();
             IOUtils.write(Parser.nodeType.get(NodeType.LOrExp));
-            if (i < lAndExpNodes.size() - 1) {
-                IOUtils.write(Token.constTokens.get(TokenType.OR).toString());
+            if (i < orTokens.size()) {
+                IOUtils.write(orTokens.get(i).toString());
             }
         }
     }

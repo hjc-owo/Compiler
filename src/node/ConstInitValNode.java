@@ -2,7 +2,6 @@ package node;
 
 import frontend.Parser;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -10,25 +9,32 @@ import java.util.List;
 public class ConstInitValNode {
     // ConstInitVal -> ConstExp | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
     private ConstExpNode constExpNode;
+    private Token leftBraceToken;
     private List<ConstInitValNode> constInitValNodes;
+    private List<Token> commas;
+    private Token rightBraceToken;
 
-    public ConstInitValNode(ConstExpNode constExpNode, List<ConstInitValNode> constInitValNodes) {
+    public ConstInitValNode(ConstExpNode constExpNode, Token leftBraceToken, List<ConstInitValNode> constInitValNodes, List<Token> commas, Token rightBraceToken) {
         this.constExpNode = constExpNode;
+        this.leftBraceToken = leftBraceToken;
         this.constInitValNodes = constInitValNodes;
+        this.commas = commas;
+        this.rightBraceToken = rightBraceToken;
     }
 
     public void print() {
         if (constExpNode != null) {
             constExpNode.print();
         } else {
-            IOUtils.write(Token.constTokens.get(TokenType.LBRACE).toString());
-            for (int i = 0; i < constInitValNodes.size(); i++) {
-                constInitValNodes.get(i).print();
-                if (i < constInitValNodes.size() - 1) {
-                    IOUtils.write(Token.constTokens.get(TokenType.COMMA).toString());
+            IOUtils.write(leftBraceToken.toString());
+            if (constInitValNodes.size() > 0) {
+                constInitValNodes.get(0).print();
+                for (int i = 1; i < constInitValNodes.size(); i++) {
+                    IOUtils.write(commas.get(i - 1).toString());
+                    constInitValNodes.get(i).print();
                 }
             }
-            IOUtils.write(Token.constTokens.get(TokenType.RBRACE).toString());
+            IOUtils.write(rightBraceToken.toString());
         }
         IOUtils.write(Parser.nodeType.get(NodeType.ConstInitVal));
     }

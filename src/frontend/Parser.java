@@ -92,16 +92,18 @@ public class Parser {
 
     private ConstDeclNode ConstDecl() {
         // ConstDecl -> 'const' BType ConstDef { ',' ConstDef } ';'
-        match(TokenType.CONSTTK);
+        Token constToken = match(TokenType.CONSTTK);
         BTypeNode bTypeNode = BType();
         List<ConstDefNode> constDefNodes = new ArrayList<>();
+        List<Token> commas = new ArrayList<>();
+        Token semicnToken;
         constDefNodes.add(ConstDef());
-        while (tokens.get(index).getType() != TokenType.SEMICN) {
-            match(TokenType.COMMA);
+        while (tokens.get(index).getType() == TokenType.COMMA) {
+            commas.add(match(TokenType.COMMA));
             constDefNodes.add(ConstDef());
         }
-        match(TokenType.SEMICN);
-        return new ConstDeclNode(bTypeNode, constDefNodes);
+        semicnToken = match(TokenType.SEMICN);
+        return new ConstDeclNode(constToken, bTypeNode, constDefNodes, commas, semicnToken);
     }
 
     private BTypeNode BType() {
@@ -113,107 +115,123 @@ public class Parser {
     private ConstDefNode ConstDef() {
         // ConstDef -> Ident { '[' ConstExp ']' } '=' ConstInitVal
         Token ident = match(TokenType.IDENFR);
+        List<Token> leftBrackets = new ArrayList<>();
         List<ConstExpNode> constExpNodes = new ArrayList<>();
-        while (tokens.get(index).getType() != TokenType.ASSIGN) {
-            match(TokenType.LBRACK);
+        List<Token> rightBrackets = new ArrayList<>();
+        Token equalToken;
+        while (tokens.get(index).getType() == TokenType.LBRACK) {
+            leftBrackets.add(match(TokenType.LBRACK));
             constExpNodes.add(ConstExp());
-            match(TokenType.RBRACK);
+            rightBrackets.add(match(TokenType.RBRACK));
         }
-        match(TokenType.ASSIGN);
+        equalToken = match(TokenType.ASSIGN);
         ConstInitValNode constInitValNode = ConstInitVal();
-        return new ConstDefNode(ident, constExpNodes, constInitValNode);
+        return new ConstDefNode(ident, leftBrackets, constExpNodes, rightBrackets, equalToken, constInitValNode);
     }
 
     private ConstInitValNode ConstInitVal() {
         // ConstInitVal -> ConstExp | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
         ConstExpNode constExpNode = null;
+        Token leftBraceToken = null;
         List<ConstInitValNode> constInitValNodes = new ArrayList<>();
+        List<Token> commas = new ArrayList<>();
+        Token rightBraceToken = null;
         if (tokens.get(index).getType() == TokenType.LBRACE) {
-            match(TokenType.LBRACE);
+            leftBraceToken = match(TokenType.LBRACE);
             if (tokens.get(index).getType() != TokenType.RBRACE) {
                 constInitValNodes.add(ConstInitVal());
                 while (tokens.get(index).getType() != TokenType.RBRACE) {
-                    match(TokenType.COMMA);
+                    commas.add(match(TokenType.COMMA));
                     constInitValNodes.add(ConstInitVal());
                 }
             }
-            match(TokenType.RBRACE);
+            rightBraceToken = match(TokenType.RBRACE);
         } else {
             constExpNode = ConstExp();
         }
-        return new ConstInitValNode(constExpNode, constInitValNodes);
+        return new ConstInitValNode(constExpNode, leftBraceToken, constInitValNodes, commas, rightBraceToken);
     }
 
     private VarDeclNode VarDecl() {
         // VarDecl -> BType VarDef { ',' VarDef } ';'
         BTypeNode bTypeNode = BType();
         List<VarDefNode> varDefNodes = new ArrayList<>();
+        List<Token> commas = new ArrayList<>();
+        Token semicnToken;
         varDefNodes.add(VarDef());
         while (tokens.get(index).getType() != TokenType.SEMICN) {
-            match(TokenType.COMMA);
+            commas.add(match(TokenType.COMMA));
             varDefNodes.add(VarDef());
         }
-        match(TokenType.SEMICN);
-        return new VarDeclNode(bTypeNode, varDefNodes);
+        semicnToken = match(TokenType.SEMICN);
+        return new VarDeclNode(bTypeNode, varDefNodes, commas, semicnToken);
     }
 
     private VarDefNode VarDef() {
         // VarDef -> Ident { '[' ConstExp ']' } [ '=' InitVal ]
         Token ident = match(TokenType.IDENFR);
+        List<Token> leftBrackets = new ArrayList<>();
         List<ConstExpNode> constExpNodes = new ArrayList<>();
+        List<Token> rightBrackets = new ArrayList<>();
+        Token equalToken = null;
         InitValNode initValNode = null;
         while (tokens.get(index).getType() == TokenType.LBRACK) {
-            match(TokenType.LBRACK);
+            leftBrackets.add(match(TokenType.LBRACK));
             constExpNodes.add(ConstExp());
-            match(TokenType.RBRACK);
+            rightBrackets.add(match(TokenType.RBRACK));
         }
         if (tokens.get(index).getType() == TokenType.ASSIGN) {
-            match(TokenType.ASSIGN);
+            equalToken = match(TokenType.ASSIGN);
             initValNode = InitVal();
         }
-        return new VarDefNode(ident, constExpNodes, initValNode);
+        return new VarDefNode(ident, leftBrackets, constExpNodes, rightBrackets, equalToken, initValNode);
     }
 
     private InitValNode InitVal() {
         // InitVal -> Exp | '{' [ InitVal { ',' InitVal } ] '}'
         ExpNode expNode = null;
+        Token leftBraceToken = null;
         List<InitValNode> initValNodes = new ArrayList<>();
+        List<Token> commas = new ArrayList<>();
+        Token rightBraceToken = null;
         if (tokens.get(index).getType() == TokenType.LBRACE) {
-            match(TokenType.LBRACE);
-            initValNodes.add(InitVal());
-            while (tokens.get(index).getType() != TokenType.RBRACE) {
-                match(TokenType.COMMA);
+            leftBraceToken = match(TokenType.LBRACE);
+            if (tokens.get(index).getType() != TokenType.RBRACE) {
                 initValNodes.add(InitVal());
+                while (tokens.get(index).getType() != TokenType.RBRACE) {
+                    commas.add(match(TokenType.COMMA));
+                    initValNodes.add(InitVal());
+                }
             }
-            match(TokenType.RBRACE);
+            rightBraceToken = match(TokenType.RBRACE);
         } else {
             expNode = Exp();
         }
-        return new InitValNode(expNode, initValNodes);
+        return new InitValNode(expNode, leftBraceToken, initValNodes, commas, rightBraceToken);
     }
 
     private FuncDefNode FuncDef() {
         // FuncDef -> FuncType Ident '(' [FuncFParams] ')' Block
         FuncTypeNode funcTypeNode = FuncType();
         Token ident = match(TokenType.IDENFR);
+        Token leftParentToken = match(TokenType.LPARENT);
         FuncFParamsNode funcParamsNode = null;
-        match(TokenType.LPARENT);
         if (tokens.get(index).getType() != TokenType.RPARENT) {
             funcParamsNode = FuncFParams();
         }
-        match(TokenType.RPARENT);
+        Token rightParentToken = match(TokenType.RPARENT);
         BlockNode blockNode = Block();
-        return new FuncDefNode(funcTypeNode, ident, funcParamsNode, blockNode);
+        return new FuncDefNode(funcTypeNode, ident, leftParentToken, funcParamsNode, rightParentToken, blockNode);
     }
 
     private MainFuncDefNode MainFuncDef() {
         // MainFuncDef -> 'int' 'main' '(' ')' Block
-        match(TokenType.INTTK);
-        match(TokenType.MAINTK);
-        match(TokenType.LPARENT);
-        match(TokenType.RPARENT);
+        Token intToken = match(TokenType.INTTK);
+        Token mainToken = match(TokenType.MAINTK);
+        Token leftParentToken = match(TokenType.LPARENT);
+        Token rightParentToken = match(TokenType.RPARENT);
         BlockNode blockNode = Block();
-        return new MainFuncDefNode(blockNode);
+        return new MainFuncDefNode(intToken, mainToken, leftParentToken, rightParentToken, blockNode);
     }
 
     private FuncTypeNode FuncType() {
@@ -230,45 +248,43 @@ public class Parser {
     private FuncFParamsNode FuncFParams() {
         // FuncFParams -> FuncFParam { ',' FuncFParam }
         List<FuncFParamNode> funcFParamNodes = new ArrayList<>();
+        List<Token> commas = new ArrayList<>();
         funcFParamNodes.add(FuncFParam());
         while (tokens.get(index).getType() == TokenType.COMMA) {
-            match(TokenType.COMMA);
+            commas.add(match(TokenType.COMMA));
             funcFParamNodes.add(FuncFParam());
         }
-        return new FuncFParamsNode(funcFParamNodes);
+        return new FuncFParamsNode(funcFParamNodes, commas);
     }
 
     private FuncFParamNode FuncFParam() {
         // FuncFParam -> BType Ident [ '[' ']' { '[' ConstExp ']' }]
         BTypeNode bTypeNode = BType();
         Token ident = match(TokenType.IDENFR);
-        Token lbrack = null;
+        List<Token> leftBrackets = new ArrayList<>();
+        List<Token> rightBrackets = new ArrayList<>();
         List<ConstExpNode> constExpNodes = new ArrayList<>();
         if (tokens.get(index).getType() == TokenType.LBRACK) {
-            lbrack = match(TokenType.LBRACK);
-            match(TokenType.RBRACK);
+            leftBrackets.add(match(TokenType.LBRACK));
+            rightBrackets.add(match(TokenType.RBRACK));
             while (tokens.get(index).getType() == TokenType.LBRACK) {
-                match(TokenType.LBRACK);
+                leftBrackets.add(match(TokenType.LBRACK));
                 constExpNodes.add(ConstExp());
-                match(TokenType.RBRACK);
+                rightBrackets.add(match(TokenType.RBRACK));
             }
         }
-        return new FuncFParamNode(bTypeNode, ident, lbrack, constExpNodes);
+        return new FuncFParamNode(bTypeNode, ident, leftBrackets, rightBrackets, constExpNodes);
     }
 
     private BlockNode Block() {
         // Block -> '{' { BlockItem } '}'
+        Token leftBraceToken = match(TokenType.LBRACE);
         List<BlockItemNode> blockItemNodes = new ArrayList<>();
-        match(TokenType.LBRACE);
-        if (tokens.get(index).getType() == TokenType.RBRACE) {
-            match(TokenType.RBRACE);
-        } else {
-            while (tokens.get(index).getType() != TokenType.RBRACE) {
-                blockItemNodes.add(BlockItem());
-            }
-            match(TokenType.RBRACE);
+        while (tokens.get(index).getType() != TokenType.RBRACE) {
+            blockItemNodes.add(BlockItem());
         }
-        return new BlockNode(blockItemNodes);
+        Token rightBraceToken = match(TokenType.RBRACE);
+        return new BlockNode(leftBraceToken, blockItemNodes, rightBraceToken);
     }
 
     private BlockItemNode BlockItem() {
@@ -293,68 +309,66 @@ public class Parser {
         //	| 'return' [Exp] ';'
         //	| LVal '=' 'getint' '(' ')' ';'
         //	| 'printf' '(' FormatString { ',' Exp } ')' ';'
-        StmtType stmtType = null;
-        LValNode lValNode = null;
-        ExpNode expNode = null;
-        BlockNode blockNode = null;
-        CondNode condNode = null;
-        List<StmtNode> stmtNodes = new ArrayList<>();
-        Token formatString = null;
-        List<ExpNode> expNodes = new ArrayList<>();
         if (tokens.get(index).getType() == TokenType.LBRACE) {
             // Block
-            stmtType = StmtType.Block;
-            blockNode = Block();
+            BlockNode blockNode = Block();
+            return new StmtNode(StmtType.Block, blockNode);
         } else if (tokens.get(index).getType() == TokenType.PRINTFTK) {
             // 'printf' '(' FormatString { ',' Exp } ')' ';'
-            stmtType = StmtType.Printf;
-            match(TokenType.PRINTFTK);
-            match(TokenType.LPARENT);
-            formatString = match(TokenType.STRCON);
+            Token printfToken = match(TokenType.PRINTFTK);
+            Token leftParentToken = match(TokenType.LPARENT);
+            Token formatString = match(TokenType.STRCON);
+            List<Token> commas = new ArrayList<>();
+            List<ExpNode> expNodes = new ArrayList<>();
             while (tokens.get(index).getType() == TokenType.COMMA) {
-                match(TokenType.COMMA);
+                commas.add(match(TokenType.COMMA));
                 expNodes.add(Exp());
             }
-            match(TokenType.RPARENT);
-            match(TokenType.SEMICN);
+            Token rightParentToken = match(TokenType.RPARENT);
+            Token semicnToken = match(TokenType.SEMICN);
+            return new StmtNode(StmtType.Printf, printfToken, leftParentToken, formatString, commas, expNodes, rightParentToken, semicnToken);
         } else if (tokens.get(index).getType() == TokenType.IFTK) {
             // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
-            stmtType = StmtType.If;
-            match(TokenType.IFTK);
-            match(TokenType.LPARENT);
-            condNode = Cond();
-            match(TokenType.RPARENT);
+            Token ifToken = match(TokenType.IFTK);
+            Token leftParentToken = match(TokenType.LPARENT);
+            CondNode condNode = Cond();
+            Token rightParentToken = match(TokenType.RPARENT);
+            List<StmtNode> stmtNodes = new ArrayList<>();
             stmtNodes.add(Stmt());
+            Token elseToken = null;
             if (tokens.get(index).getType() == TokenType.ELSETK) {
-                match(TokenType.ELSETK);
+                elseToken = match(TokenType.ELSETK);
                 stmtNodes.add(Stmt());
             }
+            return new StmtNode(StmtType.If, ifToken, leftParentToken, condNode, rightParentToken, stmtNodes, elseToken);
         } else if (tokens.get(index).getType() == TokenType.WHILETK) {
             // 'while' '(' Cond ')' Stmt
-            stmtType = StmtType.While;
-            match(TokenType.WHILETK);
-            match(TokenType.LPARENT);
-            condNode = Cond();
-            match(TokenType.RPARENT);
+            Token whileToken = match(TokenType.WHILETK);
+            Token leftParentToken = match(TokenType.LPARENT);
+            CondNode condNode = Cond();
+            Token rightParentToken = match(TokenType.RPARENT);
+            List<StmtNode> stmtNodes = new ArrayList<>();
             stmtNodes.add(Stmt());
+            return new StmtNode(StmtType.While, whileToken, leftParentToken, condNode, rightParentToken, stmtNodes);
         } else if (tokens.get(index).getType() == TokenType.BREAKTK) {
             // 'break' ';'
-            stmtType = StmtType.Break;
-            match(TokenType.BREAKTK);
-            match(TokenType.SEMICN);
+            Token breakToken = match(TokenType.BREAKTK);
+            Token semicnToken = match(TokenType.SEMICN);
+            return new StmtNode(StmtType.Break, breakToken, semicnToken);
         } else if (tokens.get(index).getType() == TokenType.CONTINUETK) {
             // 'continue' ';'
-            stmtType = StmtType.Continue;
-            match(TokenType.CONTINUETK);
-            match(TokenType.SEMICN);
+            Token continueToken = match(TokenType.CONTINUETK);
+            Token semicnToken = match(TokenType.SEMICN);
+            return new StmtNode(StmtType.Continue, continueToken, semicnToken);
         } else if (tokens.get(index).getType() == TokenType.RETURNTK) {
             // 'return' [Exp] ';'
-            stmtType = StmtType.Return;
-            match(TokenType.RETURNTK);
+            Token returnToken = match(TokenType.RETURNTK);
+            ExpNode expNode = null;
             if (tokens.get(index).getType() != TokenType.SEMICN) {
                 expNode = Exp();
             }
-            match(TokenType.SEMICN);
+            Token semicnToken = match(TokenType.SEMICN);
+            return new StmtNode(StmtType.Return, returnToken, expNode, semicnToken);
         } else {
             int assign = index, semicn = index;
             for (int i = index; i < tokens.size(); i++) {
@@ -369,28 +383,29 @@ public class Parser {
             if (assign < semicn && assign > index) {
                 // LVal '=' Exp ';'
                 // LVal '=' 'getint' '(' ')' ';'
-                lValNode = LVal();
-                match(TokenType.ASSIGN);
+                LValNode lValNode = LVal();
+                Token assignToken = match(TokenType.ASSIGN);
                 if (tokens.get(index).getType() == TokenType.GETINTTK) {
-                    stmtType = StmtType.LValAssignGetint;
-                    match(TokenType.GETINTTK);
-                    match(TokenType.LPARENT);
-                    match(TokenType.RPARENT);
+                    Token getintToken = match(TokenType.GETINTTK);
+                    Token leftParentToken = match(TokenType.LPARENT);
+                    Token rightParentToken = match(TokenType.RPARENT);
+                    Token semicnToken = match(TokenType.SEMICN);
+                    return new StmtNode(StmtType.LValAssignGetint, lValNode, assignToken, getintToken, leftParentToken, rightParentToken, semicnToken);
                 } else {
-                    stmtType = StmtType.LValAssignExp;
-                    expNode = Exp();
+                    ExpNode expNode = Exp();
+                    Token semicnToken = match(TokenType.SEMICN);
+                    return new StmtNode(StmtType.LValAssignExp, lValNode, assignToken, expNode, semicnToken);
                 }
-                match(TokenType.SEMICN);
             } else {
                 // [Exp] ';'
-                stmtType = StmtType.Exp;
+                ExpNode expNode = null;
                 if (tokens.get(index).getType() != TokenType.SEMICN) {
                     expNode = Exp();
                 }
-                match(TokenType.SEMICN);
+                Token semicnToken = match(TokenType.SEMICN);
+                return new StmtNode(StmtType.Exp, expNode, semicnToken);
             }
         }
-        return new StmtNode(stmtType, lValNode, expNode, blockNode, condNode, stmtNodes, formatString, expNodes);
     }
 
     private ExpNode Exp() {
@@ -406,30 +421,32 @@ public class Parser {
     private LValNode LVal() {
         // LVal -> Ident {'[' Exp ']'}
         Token ident = match(TokenType.IDENFR);
+        List<Token> leftBrackets = new ArrayList<>();
         List<ExpNode> expNodes = new ArrayList<>();
+        List<Token> rightBrackets = new ArrayList<>();
         while (tokens.get(index).getType() == TokenType.LBRACK) {
-            match(TokenType.LBRACK);
+            leftBrackets.add(match(TokenType.LBRACK));
             expNodes.add(Exp());
-            match(TokenType.RBRACK);
+            rightBrackets.add(match(TokenType.RBRACK));
         }
-        return new LValNode(ident, expNodes);
+        return new LValNode(ident, leftBrackets, expNodes, rightBrackets);
     }
 
     private PrimaryExpNode PrimaryExp() {
         // PrimaryExp -> '(' Exp ')' | LVal | Number
-        ExpNode expNode = null;
-        LValNode lValNode = null;
-        NumberNode numberNode = null;
         if (tokens.get(index).getType() == TokenType.LPARENT) {
-            match(TokenType.LPARENT);
-            expNode = Exp();
-            match(TokenType.RPARENT);
+            Token leftParentToken = match(TokenType.LPARENT);
+            ExpNode expNode = Exp();
+            Token rightParentToken = match(TokenType.RPARENT);
+            return new PrimaryExpNode(leftParentToken, expNode, rightParentToken);
         } else if (tokens.get(index).getType() == TokenType.INTCON) {
-            numberNode = Number();
+
+            NumberNode numberNode = Number();
+            return new PrimaryExpNode(numberNode);
         } else {
-            lValNode = LVal();
+            LValNode lValNode = LVal();
+            return new PrimaryExpNode(lValNode);
         }
-        return new PrimaryExpNode(expNode, lValNode, numberNode);
     }
 
     private NumberNode Number() {
@@ -439,25 +456,23 @@ public class Parser {
 
     private UnaryExpNode UnaryExp() {
         // UnaryExp -> PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
-        PrimaryExpNode primaryExpNode = null;
-        Token ident = null;
-        FuncRParamsNode funcRParamsNode = null;
-        UnaryOpNode unaryOpNode = null;
-        UnaryExpNode unaryExpNode = null;
         if (tokens.get(index).getType() == TokenType.IDENFR && tokens.get(index + 1).getType() == TokenType.LPARENT) {
-            ident = match(TokenType.IDENFR);
-            match(TokenType.LPARENT);
+            Token ident = match(TokenType.IDENFR);
+            Token leftParentToken = match(TokenType.LPARENT);
+            FuncRParamsNode funcRParamsNode = null;
             if (tokens.get(index).getType() != TokenType.RPARENT) {
                 funcRParamsNode = FuncRParams();
             }
-            match(TokenType.RPARENT);
+            Token rightParentToken = match(TokenType.RPARENT);
+            return new UnaryExpNode(ident, leftParentToken, funcRParamsNode, rightParentToken);
         } else if (tokens.get(index).getType() == TokenType.PLUS || tokens.get(index).getType() == TokenType.MINU || tokens.get(index).getType() == TokenType.NOT) {
-            unaryOpNode = UnaryOp();
-            unaryExpNode = UnaryExp();
+            UnaryOpNode unaryOpNode = UnaryOp();
+            UnaryExpNode unaryExpNode = UnaryExp();
+            return new UnaryExpNode(unaryOpNode, unaryExpNode);
         } else {
-            primaryExpNode = PrimaryExp();
+            PrimaryExpNode primaryExpNode = PrimaryExp();
+            return new UnaryExpNode(primaryExpNode);
         }
-        return new UnaryExpNode(primaryExpNode, ident, funcRParamsNode, unaryOpNode, unaryExpNode);
     }
 
     private UnaryOpNode UnaryOp() {
@@ -476,12 +491,13 @@ public class Parser {
     private FuncRParamsNode FuncRParams() {
         // FuncRParams -> Exp { ',' Exp }
         List<ExpNode> expNodes = new ArrayList<>();
+        List<Token> commas = new ArrayList<>();
         expNodes.add(Exp());
         while (tokens.get(index).getType() == TokenType.COMMA) {
-            match(TokenType.COMMA);
+            commas.add(match(TokenType.COMMA));
             expNodes.add(Exp());
         }
-        return new FuncRParamsNode(expNodes);
+        return new FuncRParamsNode(expNodes, commas);
     }
 
     private MulExpNode MulExp() {
@@ -557,23 +573,25 @@ public class Parser {
     private LAndExpNode LAndExp() {
         // LAndExp -> EqExp { '&&' EqExp }
         List<EqExpNode> eqExpNodes = new ArrayList<>();
+        List<Token> andTokens = new ArrayList<>();
         eqExpNodes.add(EqExp());
         while (tokens.get(index).getType() == TokenType.AND) {
-            match(TokenType.AND);
+            andTokens.add(match(TokenType.AND));
             eqExpNodes.add(EqExp());
         }
-        return new LAndExpNode(eqExpNodes);
+        return new LAndExpNode(eqExpNodes, andTokens);
     }
 
     private LOrExpNode LOrExp() {
         // LOrExp -> LAndExp { '||' LAndExp }
         List<LAndExpNode> lAndExpNodes = new ArrayList<>();
+        List<Token> orTokens = new ArrayList<>();
         lAndExpNodes.add(LAndExp());
         while (tokens.get(index).getType() == TokenType.OR) {
-            match(TokenType.OR);
+            orTokens.add(match(TokenType.OR));
             lAndExpNodes.add(LAndExp());
         }
-        return new LOrExpNode(lAndExpNodes);
+        return new LOrExpNode(lAndExpNodes, orTokens);
     }
 
     private ConstExpNode ConstExp() {

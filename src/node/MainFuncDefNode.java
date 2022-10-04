@@ -2,23 +2,30 @@ package node;
 
 import frontend.Parser;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 public class MainFuncDefNode {
     // MainFuncDef -> 'int' 'main' '(' ')' Block
 
+    private Token intToken;
+    private Token mainToken;
+    private Token leftParentToken;
+    private Token rightParentToken;
     private BlockNode blockNode;
 
-    public MainFuncDefNode(BlockNode blockNode) {
+    public MainFuncDefNode(Token intToken, Token mainToken, Token leftParentToken, Token rightParentToken, BlockNode blockNode) {
+        this.intToken = intToken;
+        this.mainToken = mainToken;
+        this.leftParentToken = leftParentToken;
+        this.rightParentToken = rightParentToken;
         this.blockNode = blockNode;
     }
 
     public void print() {
-        IOUtils.write(Token.constTokens.get(TokenType.INTTK).toString());
-        IOUtils.write(Token.constTokens.get(TokenType.MAINTK).toString());
-        IOUtils.write(Token.constTokens.get(TokenType.LPARENT).toString());
-        IOUtils.write(Token.constTokens.get(TokenType.RPARENT).toString());
+        IOUtils.write(intToken.toString());
+        IOUtils.write(mainToken.toString());
+        IOUtils.write(leftParentToken.toString());
+        IOUtils.write(rightParentToken.toString());
         blockNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.MainFuncDef));
     }

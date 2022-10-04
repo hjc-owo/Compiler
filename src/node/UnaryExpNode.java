@@ -2,23 +2,32 @@ package node;
 
 import frontend.Parser;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 public class UnaryExpNode {
     // UnaryExp -> PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
-    private PrimaryExpNode primaryExpNode;
-    private Token ident;
-    private FuncRParamsNode funcRParamsNode;
-    private UnaryOpNode unaryOpNode;
-    private UnaryExpNode unaryExpNode;
+    private PrimaryExpNode primaryExpNode = null;
+    private Token ident = null;
+    private Token leftParentToken = null;
+    private FuncRParamsNode funcRParamsNode = null;
+    private Token rightParentToken = null;
+    private UnaryOpNode unaryOpNode = null;
+    private UnaryExpNode unaryExpNode = null;
 
-    public UnaryExpNode(PrimaryExpNode primaryExpNode, Token ident, FuncRParamsNode funcRParamsNode, UnaryOpNode unaryOpNode, UnaryExpNode unaryExp) {
+    public UnaryExpNode(PrimaryExpNode primaryExpNode) {
         this.primaryExpNode = primaryExpNode;
+    }
+
+    public UnaryExpNode(Token ident, Token leftParentToken, FuncRParamsNode funcRParamsNode, Token rightParentToken) {
         this.ident = ident;
+        this.leftParentToken = leftParentToken;
         this.funcRParamsNode = funcRParamsNode;
+        this.rightParentToken = rightParentToken;
+    }
+
+    public UnaryExpNode(UnaryOpNode unaryOpNode, UnaryExpNode unaryExpNode) {
         this.unaryOpNode = unaryOpNode;
-        this.unaryExpNode = unaryExp;
+        this.unaryExpNode = unaryExpNode;
     }
 
     public void print() {
@@ -26,11 +35,11 @@ public class UnaryExpNode {
             primaryExpNode.print();
         } else if (ident != null) {
             IOUtils.write(ident.toString());
-            IOUtils.write(Token.constTokens.get(TokenType.LPARENT).toString());
+            IOUtils.write(leftParentToken.toString());
             if (funcRParamsNode != null) {
                 funcRParamsNode.print();
             }
-            IOUtils.write(Token.constTokens.get(TokenType.RPARENT).toString());
+            IOUtils.write(rightParentToken.toString());
         } else {
             unaryOpNode.print();
             unaryExpNode.print();

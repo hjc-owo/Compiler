@@ -2,7 +2,6 @@ package node;
 
 import frontend.Parser;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -19,90 +18,179 @@ public class StmtNode {
     //	| 'printf' '(' FormatString { ',' Exp } ')' ';'
     private Parser.StmtType type;
     private LValNode lValNode;
+    private Token assignToken;
     private ExpNode expNode;
+    private Token semicnToken;
     private BlockNode blockNode;
+    private Token ifToken;
+    private Token leftParentToken;
     private CondNode condNode;
+    private Token rightParentToken;
     private List<StmtNode> stmtNodes;
+    private Token elseToken;
+    private Token whileToken;
+    private Token breakOrContinueToken;
+    private Token returnToken;
+    private Token getintToken;
+    private Token printfToken;
     private Token formatString;
+    private List<Token> commas;
     private List<ExpNode> expNodes;
 
-    public StmtNode(Parser.StmtType type, LValNode lValNode, ExpNode expNode, BlockNode blockNode, CondNode condNode, List<StmtNode> stmtNodes, Token formatString, List<ExpNode> expNodes) {
+    public StmtNode(Parser.StmtType type, LValNode lValNode, Token assignToken, ExpNode expNode, Token semicnToken) {
+        // LVal '=' Exp ';'
         this.type = type;
         this.lValNode = lValNode;
+        this.assignToken = assignToken;
         this.expNode = expNode;
+        this.semicnToken = semicnToken;
+    }
+
+    public StmtNode(Parser.StmtType type, ExpNode expNode, Token semicnToken) {
+        // [Exp] ';'
+        this.type = type;
+        this.expNode = expNode;
+        this.semicnToken = semicnToken;
+    }
+
+    public StmtNode(Parser.StmtType type, BlockNode blockNode) {
+        // Block
+        this.type = type;
         this.blockNode = blockNode;
+    }
+
+    public StmtNode(Parser.StmtType type, Token ifToken, Token leftParentToken, CondNode condNode, Token rightParentToken, List<StmtNode> stmtNodes, Token elseToken) {
+        // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
+        this.type = type;
+        this.ifToken = ifToken;
+        this.leftParentToken = leftParentToken;
         this.condNode = condNode;
+        this.rightParentToken = rightParentToken;
         this.stmtNodes = stmtNodes;
+        this.elseToken = elseToken;
+    }
+
+    public StmtNode(Parser.StmtType type, Token whileToken, Token leftParentToken, CondNode condNode, Token rightParentToken, List<StmtNode> stmtNodes) {
+        // 'while' '(' Cond ')' Stmt
+        this.type = type;
+        this.whileToken = whileToken;
+        this.leftParentToken = leftParentToken;
+        this.condNode = condNode;
+        this.rightParentToken = rightParentToken;
+        this.stmtNodes = stmtNodes;
+    }
+
+    public StmtNode(Parser.StmtType type, Token breakOrContinueToken, Token semicnToken) {
+        // 'break' ';'
+        this.type = type;
+        this.breakOrContinueToken = breakOrContinueToken;
+        this.semicnToken = semicnToken;
+    }
+
+    public StmtNode(Parser.StmtType type, Token returnToken, ExpNode expNode, Token semicnToken) {
+        // 'return' [Exp] ';'
+        this.type = type;
+        this.returnToken = returnToken;
+        this.expNode = expNode;
+        this.semicnToken = semicnToken;
+    }
+
+    public StmtNode(Parser.StmtType type, LValNode lValNode, Token assignToken, Token getintToken, Token leftParentToken, Token rightParentToken, Token semicnToken) {
+        // LVal '=' 'getint' '(' ')' ';'
+        this.type = type;
+        this.lValNode = lValNode;
+        this.assignToken = assignToken;
+        this.getintToken = getintToken;
+        this.leftParentToken = leftParentToken;
+        this.rightParentToken = rightParentToken;
+        this.semicnToken = semicnToken;
+    }
+
+    public StmtNode(Parser.StmtType type, Token printfToken, Token leftParentToken, Token formatString, List<Token> commas, List<ExpNode> expNodes, Token rightParentToken, Token semicnToken) {
+        // 'printf' '(' FormatString { ',' Exp } ')' ';'
+        this.type = type;
+        this.printfToken = printfToken;
+        this.leftParentToken = leftParentToken;
         this.formatString = formatString;
+        this.commas = commas;
         this.expNodes = expNodes;
+        this.rightParentToken = rightParentToken;
+        this.semicnToken = semicnToken;
     }
 
     public void print() {
         switch (type) {
             case LValAssignExp:
+                // LVal '=' Exp ';'
                 lValNode.print();
-                IOUtils.write(Token.constTokens.get(TokenType.ASSIGN).toString());
+                IOUtils.write(assignToken.toString());
                 expNode.print();
-                IOUtils.write(Token.constTokens.get(TokenType.SEMICN).toString());
+                IOUtils.write(semicnToken.toString());
                 break;
             case Exp:
+                // [Exp] ';'
                 if (expNode != null) expNode.print();
-                IOUtils.write(Token.constTokens.get(TokenType.SEMICN).toString());
+                IOUtils.write(semicnToken.toString());
                 break;
             case Block:
+                // Block
                 blockNode.print();
                 break;
             case If:
-                IOUtils.write(Token.constTokens.get(TokenType.IFTK).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.LPARENT).toString());
+                // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
+                IOUtils.write(ifToken.toString());
+                IOUtils.write(leftParentToken.toString());
                 condNode.print();
-                IOUtils.write(Token.constTokens.get(TokenType.RPARENT).toString());
+                IOUtils.write(rightParentToken.toString());
                 stmtNodes.get(0).print();
-                if (stmtNodes.size() == 2) {
-                    IOUtils.write(Token.constTokens.get(TokenType.ELSETK).toString());
+                if (elseToken != null) {
+                    IOUtils.write(elseToken.toString());
                     stmtNodes.get(1).print();
                 }
                 break;
             case While:
-                IOUtils.write(Token.constTokens.get(TokenType.WHILETK).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.LPARENT).toString());
+                // 'while' '(' Cond ')' Stmt
+                IOUtils.write(whileToken.toString());
+                IOUtils.write(leftParentToken.toString());
                 condNode.print();
-                IOUtils.write(Token.constTokens.get(TokenType.RPARENT).toString());
+                IOUtils.write(rightParentToken.toString());
                 stmtNodes.get(0).print();
                 break;
             case Break:
-                IOUtils.write(Token.constTokens.get(TokenType.BREAKTK).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.SEMICN).toString());
-                break;
+                // 'break' ';'
             case Continue:
-                IOUtils.write(Token.constTokens.get(TokenType.CONTINUETK).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.SEMICN).toString());
+                // 'continue' ';'
+                IOUtils.write(breakOrContinueToken.toString());
+                IOUtils.write(semicnToken.toString());
                 break;
             case Return:
-                IOUtils.write(Token.constTokens.get(TokenType.RETURNTK).toString());
+                // 'return' [Exp] ';'
+                IOUtils.write(returnToken.toString());
                 if (expNode != null) {
                     expNode.print();
                 }
-                IOUtils.write(Token.constTokens.get(TokenType.SEMICN).toString());
+                IOUtils.write(semicnToken.toString());
                 break;
             case LValAssignGetint:
+                // LVal '=' 'getint' '(' ')' ';'
                 lValNode.print();
-                IOUtils.write(Token.constTokens.get(TokenType.ASSIGN).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.GETINTTK).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.LPARENT).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.RPARENT).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.SEMICN).toString());
+                IOUtils.write(assignToken.toString());
+                IOUtils.write(getintToken.toString());
+                IOUtils.write(leftParentToken.toString());
+                IOUtils.write(rightParentToken.toString());
+                IOUtils.write(semicnToken.toString());
                 break;
             case Printf:
-                IOUtils.write(Token.constTokens.get(TokenType.PRINTFTK).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.LPARENT).toString());
+                // 'printf' '(' FormatString { ',' Exp } ')' ';'
+                IOUtils.write(printfToken.toString());
+                IOUtils.write(leftParentToken.toString());
                 IOUtils.write(formatString.toString());
-                for (ExpNode expNode : expNodes) {
-                    IOUtils.write(Token.constTokens.get(TokenType.COMMA).toString());
-                    expNode.print();
+                for (int i = 0; i < commas.size(); i++) {
+                    IOUtils.write(commas.get(i).toString());
+                    expNodes.get(i).print();
                 }
-                IOUtils.write(Token.constTokens.get(TokenType.RPARENT).toString());
-                IOUtils.write(Token.constTokens.get(TokenType.SEMICN).toString());
+                IOUtils.write(rightParentToken.toString());
+                IOUtils.write(semicnToken.toString());
                 break;
         }
         IOUtils.write(Parser.nodeType.get(NodeType.Stmt));

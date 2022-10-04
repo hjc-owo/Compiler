@@ -2,27 +2,36 @@ package node;
 
 import frontend.Parser;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 public class PrimaryExpNode {
     // PrimaryExp -> '(' Exp ')' | LVal | Number
 
-    private ExpNode expNode;
-    private LValNode lValNode;
-    private NumberNode numberNode;
+    private Token leftParentToken = null;
+    private ExpNode expNode = null;
+    private Token rightParentToken = null;
+    private LValNode lValNode = null;
+    private NumberNode numberNode = null;
 
-    public PrimaryExpNode(ExpNode expNode, LValNode lValNode, NumberNode numberNode) {
+    public PrimaryExpNode(Token leftParentToken, ExpNode expNode, Token rightParentToken) {
+        this.leftParentToken = leftParentToken;
         this.expNode = expNode;
+        this.rightParentToken = rightParentToken;
+    }
+
+    public PrimaryExpNode(LValNode lValNode) {
         this.lValNode = lValNode;
+    }
+
+    public PrimaryExpNode(NumberNode numberNode) {
         this.numberNode = numberNode;
     }
 
     public void print() {
         if (expNode != null) {
-            IOUtils.write(Token.constTokens.get(TokenType.LPARENT).toString());
+            IOUtils.write(leftParentToken.toString());
             expNode.print();
-            IOUtils.write(Token.constTokens.get(TokenType.RPARENT).toString());
+            IOUtils.write(rightParentToken.toString());
         } else if (lValNode != null) {
             lValNode.print();
         } else {

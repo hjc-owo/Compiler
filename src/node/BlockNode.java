@@ -2,7 +2,6 @@ package node;
 
 import frontend.Parser;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -10,18 +9,22 @@ import java.util.List;
 public class BlockNode {
     // Block -> '{' { BlockItem } '}'
 
+    private Token leftBraceToken;
     private List<BlockItemNode> blockItemNodes;
+    private Token rightBraceToken;
 
-    public BlockNode(List<BlockItemNode> blockItemNodes) {
+    public BlockNode(Token leftBraceToken, List<BlockItemNode> blockItemNodes, Token rightBraceToken) {
+        this.leftBraceToken = leftBraceToken;
         this.blockItemNodes = blockItemNodes;
+        this.rightBraceToken = rightBraceToken;
     }
 
     public void print() {
-        IOUtils.write(Token.constTokens.get(TokenType.LBRACE).toString());
+        IOUtils.write(leftBraceToken.toString());
         for (BlockItemNode blockItemNode : blockItemNodes) {
             blockItemNode.print();
         }
-        IOUtils.write(Token.constTokens.get(TokenType.RBRACE).toString());
+        IOUtils.write(rightBraceToken.toString());
         IOUtils.write(Parser.nodeType.get(NodeType.Block));
     }
 }

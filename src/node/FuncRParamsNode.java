@@ -2,7 +2,6 @@ package node;
 
 import frontend.Parser;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -11,17 +10,18 @@ public class FuncRParamsNode {
     // FuncRParams -> Exp { ',' Exp }
 
     private List<ExpNode> expNodes;
+    private List<Token> commas;
 
-    public FuncRParamsNode(List<ExpNode> expNodes) {
+    public FuncRParamsNode(List<ExpNode> expNodes, List<Token> commas) {
         this.expNodes = expNodes;
+        this.commas = commas;
     }
 
     public void print() {
-        for (int i = 0; i < expNodes.size(); i++) {
+        expNodes.get(0).print();
+        for (int i = 1; i < expNodes.size(); i++) {
+            IOUtils.write(commas.get(i - 1).toString());
             expNodes.get(i).print();
-            if (i < expNodes.size() - 1) {
-                IOUtils.write(Token.constTokens.get(TokenType.COMMA).toString());
-            }
         }
         IOUtils.write(Parser.nodeType.get(NodeType.FuncRParams));
     }
