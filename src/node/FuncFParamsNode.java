@@ -1,9 +1,12 @@
 package node;
 
 import frontend.Parser;
+import symbol.FuncFParam;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FuncFParamsNode {
@@ -24,5 +27,19 @@ public class FuncFParamsNode {
             funcFParamNodes.get(i).print();
         }
         IOUtils.write(Parser.nodeType.get(NodeType.FuncFParams));
+    }
+
+    public List<FuncFParam> getParams() {
+        List<FuncFParam> params = new ArrayList<>();
+        for (FuncFParamNode funcFParamNode : funcFParamNodes) {
+            params.add(funcFParamNode.getParam());
+        }
+        return params;
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        for (FuncFParamNode funcFParamNode : funcFParamNodes) {
+            funcFParamNode.fillSymbolTable(currentSymbolTable);
+        }
     }
 }

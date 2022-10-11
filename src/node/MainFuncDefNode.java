@@ -1,6 +1,9 @@
 package node;
 
 import frontend.Parser;
+import symbol.FuncSymbolTable;
+import symbol.FuncType;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -30,4 +33,9 @@ public class MainFuncDefNode {
         IOUtils.write(Parser.nodeType.get(NodeType.MainFuncDef));
     }
 
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        currentSymbolTable = new FuncSymbolTable(currentSymbolTable, FuncType.INT);
+        blockNode.fillSymbolTable(currentSymbolTable);
+    }
 }

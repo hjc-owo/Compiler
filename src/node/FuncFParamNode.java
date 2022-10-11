@@ -1,9 +1,16 @@
 package node;
 
+import error.Error;
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.ArraySymbol;
+import symbol.FuncFParam;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FuncFParamNode {
@@ -36,5 +43,34 @@ public class FuncFParamNode {
             }
         }
         IOUtils.write(Parser.nodeType.get(NodeType.FuncFParam));
+    }
+
+    public FuncFParam getParam() {
+        int dimension = leftBrackets.size();
+        if (dimension == 0) {
+            return new FuncFParam(ident.getContent(), 0);
+        } else {
+            List<Integer> dimLengths = new ArrayList<>();
+            for (ConstExpNode constExpNode : constExpNodes) {
+                dimLengths.add(constExpNode.getValue());
+            }
+            return new FuncFParam(ident.getContent(), dimension, dimLengths);
+        }
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        if (currentSymbolTable.containsInCurrent(ident.getContent())) {
+            ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.b));
+        }
+        int dimension = leftBrackets.size();
+        if (dimension == 0) {
+            currentSymbolTable.put(ident.getContent(), new ArraySymbol(ident.getContent(), false, 0, new ArrayList<>()));
+        } else {
+            List<Integer> dimLengths = new ArrayList<>();
+            for (ConstExpNode constExpNode : constExpNodes) {
+                dimLengths.add(constExpNode.getValue());
+            }
+            currentSymbolTable.put(ident.getContent(), new ArraySymbol(ident.getContent(), false, dimension, dimLengths));
+        }
     }
 }

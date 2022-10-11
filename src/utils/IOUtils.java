@@ -43,6 +43,15 @@ public class IOUtils {
         }
     }
 
+    public static void error(String message) {
+        File outputFile = new File("error.txt");
+        try (FileWriter writer = new FileWriter(outputFile, true)) {
+            writer.write(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void delete(String filename) {
         File file = new File(filename);
         if (file.exists()) {

@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -38,5 +39,15 @@ public class InitValNode {
             IOUtils.write(rightBraceToken.toString());
         }
         IOUtils.write(Parser.nodeType.get(NodeType.InitVal));
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        if (expNode != null) {
+            expNode.fillSymbolTable(currentSymbolTable);
+        } else {
+            for (InitValNode initValNode : initValNodes) {
+                initValNode.fillSymbolTable(currentSymbolTable);
+            }
+        }
     }
 }

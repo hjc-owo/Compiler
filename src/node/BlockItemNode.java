@@ -1,5 +1,7 @@
 package node;
 
+import symbol.SymbolTable;
+
 public class BlockItemNode {
     // BlockItem -> Decl | Stmt
     private DeclNode declNode;
@@ -10,11 +12,27 @@ public class BlockItemNode {
         this.stmtNode = stmtNode;
     }
 
+    public DeclNode getDeclNode() {
+        return declNode;
+    }
+
+    public StmtNode getStmtNode() {
+        return stmtNode;
+    }
+
     public void print() {
         if (declNode != null) {
             declNode.print();
         } else {
             stmtNode.print();
+        }
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        if (declNode != null) {
+            declNode.fillSymbolTable(currentSymbolTable);
+        } else {
+            stmtNode.fillSymbolTable(currentSymbolTable);
         }
     }
 }

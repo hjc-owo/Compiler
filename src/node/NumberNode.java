@@ -13,6 +13,10 @@ public class NumberNode {
         this.token = token;
     }
 
+    public int getValue() {
+        return Integer.parseInt(token.getContent());
+    }
+
     public void print() {
         IOUtils.write(token.toString());
         IOUtils.write(Parser.nodeType.get(NodeType.Number));

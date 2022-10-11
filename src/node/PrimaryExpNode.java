@@ -1,6 +1,8 @@
 package node;
 
 import frontend.Parser;
+import symbol.FuncRParam;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -27,6 +29,16 @@ public class PrimaryExpNode {
         this.numberNode = numberNode;
     }
 
+    public int getValue() {
+        if (expNode != null) {
+            return expNode.getValue();
+        } else if (lValNode != null) {
+            return lValNode.getValue();
+        } else {
+            return numberNode.getValue();
+        }
+    }
+
     public void print() {
         if (expNode != null) {
             IOUtils.write(leftParentToken.toString());
@@ -38,5 +50,23 @@ public class PrimaryExpNode {
             numberNode.print();
         }
         IOUtils.write(Parser.nodeType.get(NodeType.PrimaryExp));
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        if (expNode != null) {
+            expNode.fillSymbolTable(currentSymbolTable);
+        } else if (lValNode != null) {
+            lValNode.fillSymbolTable(currentSymbolTable);
+        }
+    }
+
+    public FuncRParam getFuncRParam() {
+        if (expNode != null) {
+            return expNode.getFuncRParam();
+        } else if (lValNode != null) {
+            return lValNode.getFuncRParam();
+        } else {
+            return new FuncRParam(null, 0);
+        }
     }
 }

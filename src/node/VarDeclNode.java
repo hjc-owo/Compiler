@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -29,5 +30,11 @@ public class VarDeclNode {
         }
         IOUtils.write(semicn.toString());
         IOUtils.write(Parser.nodeType.get(NodeType.VarDecl));
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        for (VarDefNode varDefNode : varDefNodes) {
+            varDefNode.fillSymbolTable(currentSymbolTable);
+        }
     }
 }

@@ -1,6 +1,10 @@
 package frontend;
 
+import error.Error;
+import error.ErrorHandler;
+import error.ErrorType;
 import node.*;
+import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 
@@ -13,6 +17,8 @@ public class Parser {
     private List<Token> tokens;
     private int index = 0;
     private CompUnitNode compUnitNode;
+    private SymbolTable symbolTable = new SymbolTable();
+    private SymbolTable currentSymbolTable = symbolTable;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -56,6 +62,10 @@ public class Parser {
         put(NodeType.LOrExp, "<LOrExp>\n");
         put(NodeType.ConstExp, "<ConstExp>\n");
     }};
+
+    public void fillSymbolTable() {
+        this.compUnitNode.fillSymbolTable(currentSymbolTable);
+    }
 
     public enum StmtType {
         LValAssignExp, Exp, Block, If, While, Break, Continue, Return, LValAssignGetint, Printf
@@ -159,7 +169,7 @@ public class Parser {
         List<Token> commas = new ArrayList<>();
         Token semicnToken;
         varDefNodes.add(VarDef());
-        while (tokens.get(index).getType() != TokenType.SEMICN) {
+        while (tokens.get(index).getType() == TokenType.COMMA) {
             commas.add(match(TokenType.COMMA));
             varDefNodes.add(VarDef());
         }
@@ -371,16 +381,12 @@ public class Parser {
             return new StmtNode(StmtType.Return, returnToken, expNode, semicnToken);
         } else {
             int assign = index, semicn = index;
-            for (int i = index; i < tokens.size(); i++) {
+            for (int i = index; i < tokens.size() && tokens.get(i).getLineNumber() == tokens.get(index).getLineNumber(); i++) {
                 if (tokens.get(i).getType() == TokenType.ASSIGN) {
                     assign = i;
                 }
-                if (tokens.get(i).getType() == TokenType.SEMICN) {
-                    semicn = i;
-                    break;
-                }
             }
-            if (assign < semicn && assign > index) {
+            if (assign > index) {
                 // LVal '=' Exp ';'
                 // LVal '=' 'getint' '(' ')' ';'
                 LValNode lValNode = LVal();
@@ -399,7 +405,12 @@ public class Parser {
             } else {
                 // [Exp] ';'
                 ExpNode expNode = null;
-                if (tokens.get(index).getType() != TokenType.SEMICN) {
+                if (tokens.get(index).getType() == TokenType.IDENFR ||
+                        tokens.get(index).getType() == TokenType.PLUS ||
+                        tokens.get(index).getType() == TokenType.MINU ||
+                        tokens.get(index).getType() == TokenType.NOT ||
+                        tokens.get(index).getType() == TokenType.LPARENT ||
+                        tokens.get(index).getType() == TokenType.INTCON) {
                     expNode = Exp();
                 }
                 Token semicnToken = match(TokenType.SEMICN);
@@ -477,7 +488,7 @@ public class Parser {
 
     private UnaryOpNode UnaryOp() {
         // UnaryOp -> '+' | '−' | '!'
-        Token token = null;
+        Token token;
         if (tokens.get(index).getType() == TokenType.PLUS) {
             token = match(TokenType.PLUS);
         } else if (tokens.get(index).getType() == TokenType.MINU) {
@@ -603,7 +614,17 @@ public class Parser {
         if (tokens.get(index).getType() == tokenType) {
             return tokens.get(index++);
         } else {
-            throw new RuntimeException("Syntax error: " + tokens.get(index).toString() + " at line " + tokens.get(index).getLineNumber());
+            if (tokenType == TokenType.SEMICN) {
+                ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.i));
+                return new Token(TokenType.SEMICN, tokens.get(index - 1).getLineNumber(), ";");
+            } else if (tokenType == TokenType.RPARENT) {
+                ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.j));
+                return new Token(TokenType.RPARENT, tokens.get(index - 1).getLineNumber(), ")");
+            } else if (tokenType == TokenType.RBRACK) {
+                ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.k));
+                return new Token(TokenType.RBRACK, tokens.get(index - 1).getLineNumber(), "]");
+            }
+            return new Token(tokenType, tokens.get(index - 1).getLineNumber(), "");
         }
     }
 

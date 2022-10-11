@@ -1,5 +1,8 @@
 package frontend;
 
+import error.Error;
+import error.ErrorHandler;
+import error.ErrorType;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -64,8 +67,20 @@ public class Lexer {
                 String s = "\"";
                 for (int j = i + 1; j < contentLength; j++) {
                     char d = content.charAt(j);
-                    if (d != '\"') s += d;
-                    else {
+                    if (d != '\"') {
+                        s += d;
+                        if (d == 32 || d == 33 || d >= 40 && d <= 126) {
+                            if (d == 92 && content.charAt(j + 1) != 'n') {
+                                ErrorHandler.addError(new Error(lineNumber, ErrorType.a));
+                            }
+                        } else if (d == 37) {
+                            if (content.charAt(j + 1) != 'd') {
+                                ErrorHandler.addError(new Error(lineNumber, ErrorType.a));
+                            }
+                        } else {
+                            ErrorHandler.addError(new Error(lineNumber, ErrorType.a));
+                        }
+                    } else {
                         i = j;
                         s += "\"";
                         break;

@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -24,6 +25,12 @@ public class RelExpNode {
             if (i < operations.size()) {
                 IOUtils.write(operations.get(i).toString());
             }
+        }
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        for (AddExpNode addExpNode : addExpNodes) {
+            addExpNode.fillSymbolTable(currentSymbolTable);
         }
     }
 }

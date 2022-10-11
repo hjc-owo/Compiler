@@ -1,8 +1,17 @@
 package node;
 
+import error.Error;
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.*;
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class UnaryExpNode {
     // UnaryExp -> PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
@@ -30,6 +39,23 @@ public class UnaryExpNode {
         this.unaryExpNode = unaryExpNode;
     }
 
+    public int getValue() {
+        if (primaryExpNode != null) {
+            return primaryExpNode.getValue();
+        } else if (ident != null) {
+            // TODO: function call
+            return 0;
+        } else {
+            if (unaryOpNode.getToken().getType() == TokenType.PLUS) {
+                return unaryExpNode.getValue();
+            } else if (unaryOpNode.getToken().getType() == TokenType.MINU) {
+                return -unaryExpNode.getValue();
+            } else {
+                return ~unaryExpNode.getValue();
+            }
+        }
+    }
+
     public void print() {
         if (primaryExpNode != null) {
             primaryExpNode.print();
@@ -45,5 +71,65 @@ public class UnaryExpNode {
             unaryExpNode.print();
         }
         IOUtils.write(Parser.nodeType.get(NodeType.UnaryExp));
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        if (primaryExpNode != null) {
+            primaryExpNode.fillSymbolTable(currentSymbolTable);
+        } else if (ident != null) {
+            if (!currentSymbolTable.contains(ident.getContent())) {
+                ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.c));
+            }
+            Symbol symbol = currentSymbolTable.get(ident.getContent());
+            if (symbol instanceof FuncSymbol) {
+                FuncSymbol funcSymbol = (FuncSymbol) symbol;
+                if (funcRParamsNode == null) {
+                    if (funcSymbol.getFuncFParams().size() != 0) {
+                        ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.d));
+                    }
+                } else {
+                    if (funcSymbol.getFuncFParams().size() != funcRParamsNode.getExpNodes().size()) {
+                        ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.d));
+                    }
+                    List<Integer> funcFParamDimensions = new ArrayList<>();
+                    for (FuncFParam funcFParam : funcSymbol.getFuncFParams()) {
+                        funcFParamDimensions.add(funcFParam.getDimension());
+                    }
+                    List<Integer> funcRParamDimensions = new ArrayList<>();
+                    if (funcRParamsNode != null) {
+                        for (ExpNode expNode : funcRParamsNode.getExpNodes()) {
+                            FuncRParam funcRParam = expNode.getFuncRParam();
+                            if (funcRParam != null) {
+                                if (funcRParam.getName() != null) {
+                                    Symbol symbol2 = currentSymbolTable.get(funcRParam.getName());
+                                    if (symbol2 instanceof ArraySymbol) {
+                                        funcRParamDimensions.add(((ArraySymbol) symbol2).getDimension() - funcRParam.getDimension());
+                                    } else if (symbol2 instanceof FuncSymbol) {
+                                        funcRParamDimensions.add(((FuncSymbol) symbol2).getType() == FuncType.VOID ? -1 : 0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (!Objects.equals(funcFParamDimensions, funcRParamDimensions)) {
+                        ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.e));
+                    }
+                }
+            } else {
+                ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.c));
+            }
+        } else {
+            unaryExpNode.fillSymbolTable(currentSymbolTable);
+        }
+    }
+
+    public FuncRParam getFuncRParam() {
+        if (primaryExpNode != null) {
+            return primaryExpNode.getFuncRParam();
+        } else if (ident != null) {
+            return null;
+        } else {
+            return unaryExpNode.getFuncRParam();
+        }
     }
 }

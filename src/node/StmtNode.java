@@ -1,6 +1,13 @@
 package node;
 
+import error.Error;
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.ArraySymbol;
+import symbol.FuncSymbolTable;
+import symbol.FuncType;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -118,6 +125,10 @@ public class StmtNode {
         this.semicnToken = semicnToken;
     }
 
+    public Token getReturnToken() {
+        return returnToken;
+    }
+
     public void print() {
         switch (type) {
             case LValAssignExp:
@@ -194,5 +205,77 @@ public class StmtNode {
                 break;
         }
         IOUtils.write(Parser.nodeType.get(NodeType.Stmt));
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        switch (type) {
+            case Exp:
+                // [Exp] ';'
+                if (expNode != null) expNode.fillSymbolTable(currentSymbolTable);
+                break;
+            case Block:
+                // Block
+                currentSymbolTable = new SymbolTable(currentSymbolTable);
+                blockNode.fillSymbolTable(currentSymbolTable);
+                break;
+            case If:
+                // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
+                condNode.fillSymbolTable(currentSymbolTable);
+                stmtNodes.get(0).fillSymbolTable(currentSymbolTable);
+                if (elseToken != null) {
+                    stmtNodes.get(1).fillSymbolTable(currentSymbolTable);
+                }
+                break;
+            case While:
+                // 'while' '(' Cond ')' Stmt
+                ErrorHandler.loopCount++;
+                stmtNodes.get(0).fillSymbolTable(currentSymbolTable);
+                ErrorHandler.loopCount--;
+                break;
+            case Break:
+                // 'break' ';'
+            case Continue:
+                // 'continue' ';'
+                if (ErrorHandler.loopCount == 0) {
+                    ErrorHandler.addError(new Error(breakOrContinueToken.getLineNumber(), ErrorType.m));
+                }
+                break;
+            case Return:
+                // 'return' [Exp] ';'
+                if (currentSymbolTable instanceof FuncSymbolTable) {
+                    FuncSymbolTable funcSymbolTable = (FuncSymbolTable) currentSymbolTable;
+                    if (funcSymbolTable.getType() == FuncType.VOID && expNode != null) {
+                        ErrorHandler.addError(new Error(returnToken.getLineNumber(), ErrorType.f));
+                    }
+                }
+                break;
+            case LValAssignExp:
+                // LVal '=' Exp ';'
+            case LValAssignGetint:
+                // LVal '=' 'getint' '(' ')' ';'
+                if (currentSymbolTable.get(lValNode.getIdent().getContent()) instanceof ArraySymbol) {
+                    ArraySymbol arraySymbol = (ArraySymbol) currentSymbolTable.get(lValNode.getIdent().getContent());
+                    if (arraySymbol.isConst()) {
+                        ErrorHandler.addError(new Error(lValNode.getIdent().getLineNumber(), ErrorType.h));
+                    }
+                }
+                lValNode.fillSymbolTable(currentSymbolTable);
+                break;
+            case Printf:
+                // 'printf' '(' FormatString { ',' Exp } ')' ';'
+                int numOfExp = expNodes.size();
+                int numOfFormatString = 0;
+                for (int i = 0; i < formatString.toString().length(); i++) {
+                    if (formatString.toString().charAt(i) == '%') {
+                        if (formatString.toString().charAt(i + 1) == 'd') {
+                            numOfFormatString++;
+                        }
+                    }
+                }
+                if (numOfExp != numOfFormatString) {
+                    ErrorHandler.addError(new Error(printfToken.getLineNumber(), ErrorType.l));
+                }
+                break;
+        }
     }
 }

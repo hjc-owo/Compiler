@@ -17,6 +17,14 @@ public class FuncRParamsNode {
         this.commas = commas;
     }
 
+    public List<ExpNode> getExpNodes() {
+        return expNodes;
+    }
+
+    public List<Token> getCommas() {
+        return commas;
+    }
+
     public void print() {
         expNodes.get(0).print();
         for (int i = 1; i < expNodes.size(); i++) {

@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -23,6 +24,12 @@ public class LAndExpNode {
             if (i < andTokens.size()) {
                 IOUtils.write(andTokens.get(i).toString());
             }
+        }
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        for (EqExpNode eqExpNode : eqExpNodes) {
+            eqExpNode.fillSymbolTable(currentSymbolTable);
         }
     }
 }

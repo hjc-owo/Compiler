@@ -1,6 +1,11 @@
 package node;
 
+import error.Error;
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.FuncRParam;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -20,6 +25,15 @@ public class LValNode {
         this.rightBrackets = rightBrackets;
     }
 
+    public Token getIdent() {
+        return ident;
+    }
+
+    public int getValue() {
+        return 0;
+        // todo
+    }
+
     public void print() {
         IOUtils.write(ident.toString());
         for (int i = 0; i < leftBrackets.size(); i++) {
@@ -28,5 +42,18 @@ public class LValNode {
             IOUtils.write(rightBrackets.get(i).toString());
         }
         IOUtils.write(Parser.nodeType.get(NodeType.LVal));
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        if (!currentSymbolTable.contains(ident.getContent())) {
+            ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.c));
+        }
+        for (ExpNode expNode : expNodes) {
+            expNode.fillSymbolTable(currentSymbolTable);
+        }
+    }
+
+    public FuncRParam getFuncRParam() {
+        return new FuncRParam(ident.getContent(), expNodes.size());
     }
 }

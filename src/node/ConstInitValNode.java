@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -37,5 +38,15 @@ public class ConstInitValNode {
             IOUtils.write(rightBraceToken.toString());
         }
         IOUtils.write(Parser.nodeType.get(NodeType.ConstInitVal));
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        if (constExpNode != null) {
+            constExpNode.fillSymbolTable(currentSymbolTable);
+        } else {
+            for (ConstInitValNode constInitValNode : constInitValNodes) {
+                constInitValNode.fillSymbolTable(currentSymbolTable);
+            }
+        }
     }
 }

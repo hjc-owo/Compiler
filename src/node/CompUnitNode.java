@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import utils.IOUtils;
 
 import java.util.List;
@@ -29,4 +30,13 @@ public class CompUnitNode {
         IOUtils.write(Parser.nodeType.get(NodeType.CompUnit));
     }
 
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        for (DeclNode declNode : declNodes) {
+            declNode.fillSymbolTable(currentSymbolTable);
+        }
+        for (FuncDefNode funcDefNode : funcDefNodes) {
+            funcDefNode.fillSymbolTable(currentSymbolTable);
+        }
+        mainFuncDefNode.fillSymbolTable(currentSymbolTable);
+    }
 }

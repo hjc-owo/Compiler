@@ -1,13 +1,14 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
 import java.util.List;
 
 public class EqExpNode {
-    // RelExp | EqExp ('\=\=' | '!=') RelExp
+    // RelExp | EqExp ('==' | '!=') RelExp
     private List<RelExpNode> relExpNodes;
     private List<Token> operations;
 
@@ -23,6 +24,12 @@ public class EqExpNode {
             if (i < operations.size()) {
                 IOUtils.write(operations.get(i).toString());
             }
+        }
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        for (RelExpNode relExpNode : relExpNodes) {
+            relExpNode.fillSymbolTable(currentSymbolTable);
         }
     }
 }

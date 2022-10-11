@@ -1,5 +1,7 @@
 package node;
 
+import symbol.SymbolTable;
+
 public class DeclNode {
     // Decl -> ConstDecl | VarDecl
     private ConstDeclNode constDecl;
@@ -15,6 +17,14 @@ public class DeclNode {
             constDecl.print();
         } else {
             varDecl.print();
+        }
+    }
+
+    public void fillSymbolTable(SymbolTable currentSymbolTable) {
+        if (constDecl != null) {
+            constDecl.fillSymbolTable(currentSymbolTable);
+        } else {
+            varDecl.fillSymbolTable(currentSymbolTable);
         }
     }
 }

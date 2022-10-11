@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.FuncType;
 import token.Token;
 import utils.IOUtils;
 
@@ -16,5 +17,13 @@ public class FuncTypeNode {
     public void print() {
         IOUtils.write(token.toString());
         IOUtils.write(Parser.nodeType.get(NodeType.FuncType));
+    }
+
+    public FuncType getType() {
+        if (token.getContent().equals("void")) {
+            return FuncType.VOID;
+        } else {
+            return FuncType.INT;
+        }
     }
 }
