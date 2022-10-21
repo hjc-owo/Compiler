@@ -1,7 +1,7 @@
 package node;
 
 import frontend.Parser;
-import symbol.FuncFParam;
+import symbol.FuncParam;
 import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
@@ -29,8 +29,8 @@ public class FuncFParamsNode {
         IOUtils.write(Parser.nodeType.get(NodeType.FuncFParams));
     }
 
-    public List<FuncFParam> getParams() {
-        List<FuncFParam> params = new ArrayList<>();
+    public List<FuncParam> getParams() {
+        List<FuncParam> params = new ArrayList<>();
         for (FuncFParamNode funcFParamNode : funcFParamNodes) {
             params.add(funcFParamNode.getParam());
         }

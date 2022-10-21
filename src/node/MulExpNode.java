@@ -1,7 +1,7 @@
 package node;
 
 import frontend.Parser;
-import symbol.FuncRParam;
+import symbol.FuncParam;
 import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
@@ -50,7 +50,7 @@ public class MulExpNode {
         }
     }
 
-    public FuncRParam getFuncRParam() {
-        return unaryExpNodes.get(0).getFuncRParam();
+    public FuncParam getFuncParam() {
+        return unaryExpNodes.get(0).getFuncParam();
     }
 }

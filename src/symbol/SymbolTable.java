@@ -51,8 +51,8 @@ public class SymbolTable {
             } else if (symbols.get(ident) instanceof FuncSymbol) {
                 FuncSymbol funcSymbol = (FuncSymbol) symbols.get(ident);
                 System.out.println("Func: " + ident + " " + funcSymbol.getType() + " ");
-                for (FuncFParam funcFParam : funcSymbol.getFuncFParams()) {
-                    System.out.println(funcFParam.toString());
+                for (FuncParam funcParam : funcSymbol.getFuncParams()) {
+                    System.out.println(funcParam.toString());
                 }
             }
         }

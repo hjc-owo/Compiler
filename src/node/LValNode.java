@@ -4,7 +4,7 @@ import error.Error;
 import error.ErrorHandler;
 import error.ErrorType;
 import frontend.Parser;
-import symbol.FuncRParam;
+import symbol.FuncParam;
 import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
@@ -53,7 +53,7 @@ public class LValNode {
         }
     }
 
-    public FuncRParam getFuncRParam() {
-        return new FuncRParam(ident.getContent(), expNodes.size());
+    public FuncParam getFuncParam() {
+        return new FuncParam(ident.getContent(), expNodes.size());
     }
 }

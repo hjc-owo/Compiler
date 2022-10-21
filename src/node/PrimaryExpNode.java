@@ -1,7 +1,7 @@
 package node;
 
 import frontend.Parser;
-import symbol.FuncRParam;
+import symbol.FuncParam;
 import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
@@ -60,13 +60,13 @@ public class PrimaryExpNode {
         }
     }
 
-    public FuncRParam getFuncRParam() {
+    public FuncParam getFuncParam() {
         if (expNode != null) {
-            return expNode.getFuncRParam();
+            return expNode.getFuncParam();
         } else if (lValNode != null) {
-            return lValNode.getFuncRParam();
+            return lValNode.getFuncParam();
         } else {
-            return new FuncRParam(null, 0);
+            return new FuncParam(null, 0);
         }
     }
 }

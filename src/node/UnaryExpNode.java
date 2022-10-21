@@ -84,21 +84,21 @@ public class UnaryExpNode {
             if (symbol instanceof FuncSymbol) {
                 FuncSymbol funcSymbol = (FuncSymbol) symbol;
                 if (funcRParamsNode == null) {
-                    if (funcSymbol.getFuncFParams().size() != 0) {
+                    if (funcSymbol.getFuncParams().size() != 0) {
                         ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.d));
                     }
                 } else {
-                    if (funcSymbol.getFuncFParams().size() != funcRParamsNode.getExpNodes().size()) {
+                    if (funcSymbol.getFuncParams().size() != funcRParamsNode.getExpNodes().size()) {
                         ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.d));
                     }
                     List<Integer> funcFParamDimensions = new ArrayList<>();
-                    for (FuncFParam funcFParam : funcSymbol.getFuncFParams()) {
-                        funcFParamDimensions.add(funcFParam.getDimension());
+                    for (FuncParam funcParam : funcSymbol.getFuncParams()) {
+                        funcFParamDimensions.add(funcParam.getDimension());
                     }
                     List<Integer> funcRParamDimensions = new ArrayList<>();
                     if (funcRParamsNode != null) {
                         for (ExpNode expNode : funcRParamsNode.getExpNodes()) {
-                            FuncRParam funcRParam = expNode.getFuncRParam();
+                            FuncParam funcRParam = expNode.getFuncParam();
                             if (funcRParam != null) {
                                 if (funcRParam.getName() != null) {
                                     Symbol symbol2 = currentSymbolTable.get(funcRParam.getName());
@@ -107,6 +107,8 @@ public class UnaryExpNode {
                                     } else if (symbol2 instanceof FuncSymbol) {
                                         funcRParamDimensions.add(((FuncSymbol) symbol2).getType() == FuncType.VOID ? -1 : 0);
                                     }
+                                } else {
+                                    funcRParamDimensions.add(funcRParam.getDimension());
                                 }
                             }
                         }
@@ -123,13 +125,13 @@ public class UnaryExpNode {
         }
     }
 
-    public FuncRParam getFuncRParam() {
+    public FuncParam getFuncParam() {
         if (primaryExpNode != null) {
-            return primaryExpNode.getFuncRParam();
+            return primaryExpNode.getFuncParam();
         } else if (ident != null) {
             return null;
         } else {
-            return unaryExpNode.getFuncRParam();
+            return unaryExpNode.getFuncParam();
         }
     }
 }

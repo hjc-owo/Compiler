@@ -5,7 +5,7 @@ import error.ErrorHandler;
 import error.ErrorType;
 import frontend.Parser;
 import symbol.ArraySymbol;
-import symbol.FuncFParam;
+import symbol.FuncParam;
 import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
@@ -45,17 +45,8 @@ public class FuncFParamNode {
         IOUtils.write(Parser.nodeType.get(NodeType.FuncFParam));
     }
 
-    public FuncFParam getParam() {
-        int dimension = leftBrackets.size();
-        if (dimension == 0) {
-            return new FuncFParam(ident.getContent(), 0);
-        } else {
-            List<Integer> dimLengths = new ArrayList<>();
-            for (ConstExpNode constExpNode : constExpNodes) {
-                dimLengths.add(constExpNode.getValue());
-            }
-            return new FuncFParam(ident.getContent(), dimension, dimLengths);
-        }
+    public FuncParam getParam() {
+        return new FuncParam(ident.getContent(), leftBrackets.size());
     }
 
     public void fillSymbolTable(SymbolTable currentSymbolTable) {

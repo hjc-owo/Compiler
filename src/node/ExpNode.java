@@ -1,7 +1,7 @@
 package node;
 
 import frontend.Parser;
-import symbol.FuncRParam;
+import symbol.FuncParam;
 import symbol.SymbolTable;
 import utils.IOUtils;
 
@@ -27,7 +27,7 @@ public class ExpNode {
         addExpNode.fillSymbolTable(currentSymbolTable);
     }
 
-    public FuncRParam getFuncRParam() {
-        return addExpNode.getFuncRParam();
+    public FuncParam getFuncParam() {
+        return addExpNode.getFuncParam();
     }
 }
