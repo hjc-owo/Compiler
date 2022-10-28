@@ -58,8 +58,8 @@ public class FuncFParamNode {
             currentSymbolTable.put(ident.getContent(), new ArraySymbol(ident.getContent(), false, 0, new ArrayList<>()));
         } else {
             List<Integer> dimLengths = new ArrayList<>();
-            for (ConstExpNode constExpNode : constExpNodes) {
-                dimLengths.add(constExpNode.getValue());
+            for (ConstExpNode ignored : constExpNodes) {
+                dimLengths.add(1);
             }
             currentSymbolTable.put(ident.getContent(), new ArraySymbol(ident.getContent(), false, dimension, dimLengths));
         }

@@ -39,23 +39,6 @@ public class UnaryExpNode {
         this.unaryExpNode = unaryExpNode;
     }
 
-    public int getValue() {
-        if (primaryExpNode != null) {
-            return primaryExpNode.getValue();
-        } else if (ident != null) {
-            // TODO: function call
-            return 0;
-        } else {
-            if (unaryOpNode.getToken().getType() == TokenType.PLUS) {
-                return unaryExpNode.getValue();
-            } else if (unaryOpNode.getToken().getType() == TokenType.MINU) {
-                return -unaryExpNode.getValue();
-            } else {
-                return ~unaryExpNode.getValue();
-            }
-        }
-    }
-
     public void print() {
         if (primaryExpNode != null) {
             primaryExpNode.print();

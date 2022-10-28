@@ -13,8 +13,8 @@ public class ConstExpNode {
         this.addExpNode = addExpNode;
     }
 
-    public int getValue() {
-        return addExpNode.getValue();
+    public AddExpNode getAddExpNode() {
+        return addExpNode;
     }
 
     public void print() {

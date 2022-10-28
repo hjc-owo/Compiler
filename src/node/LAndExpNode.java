@@ -9,27 +9,41 @@ import java.util.List;
 
 public class LAndExpNode {
     // LAndExp -> EqExp | LAndExp '&&' EqExp
-    private List<EqExpNode> eqExpNodes;
-    private List<Token> andTokens;
+    private EqExpNode eqExpNode;
+    private Token andToken;
+    private LAndExpNode lAndExpNode;
 
-    public LAndExpNode(List<EqExpNode> eqExpNodes, List<Token> andTokens) {
-        this.eqExpNodes = eqExpNodes;
-        this.andTokens = andTokens;
+    public LAndExpNode(EqExpNode eqExpNode, Token operator, LAndExpNode lAndExpNode) {
+        this.eqExpNode = eqExpNode;
+        this.andToken = operator;
+        this.lAndExpNode = lAndExpNode;
+    }
+
+    public EqExpNode getEqExpNode() {
+        return eqExpNode;
+    }
+
+    public Token getAndToken() {
+        return andToken;
+    }
+
+    public LAndExpNode getlAndExpNode() {
+        return lAndExpNode;
     }
 
     public void print() {
-        for (int i = 0; i < eqExpNodes.size(); i++) {
-            eqExpNodes.get(i).print();
-            IOUtils.write(Parser.nodeType.get(NodeType.LAndExp));
-            if (i < andTokens.size()) {
-                IOUtils.write(andTokens.get(i).toString());
-            }
+        eqExpNode.print();
+        IOUtils.write(Parser.nodeType.get(NodeType.LAndExp));
+        if (andToken != null) {
+            IOUtils.write(andToken.toString());
+            lAndExpNode.print();
         }
     }
 
     public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (EqExpNode eqExpNode : eqExpNodes) {
-            eqExpNode.fillSymbolTable(currentSymbolTable);
+        eqExpNode.fillSymbolTable(currentSymbolTable);
+        if (lAndExpNode != null) {
+            lAndExpNode.fillSymbolTable(currentSymbolTable);
         }
     }
 }

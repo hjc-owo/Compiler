@@ -29,16 +29,6 @@ public class PrimaryExpNode {
         this.numberNode = numberNode;
     }
 
-    public int getValue() {
-        if (expNode != null) {
-            return expNode.getValue();
-        } else if (lValNode != null) {
-            return lValNode.getValue();
-        } else {
-            return numberNode.getValue();
-        }
-    }
-
     public void print() {
         if (expNode != null) {
             IOUtils.write(leftParentToken.toString());

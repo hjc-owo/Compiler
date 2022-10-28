@@ -4,50 +4,49 @@ import frontend.Parser;
 import symbol.FuncParam;
 import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
-
-import java.util.List;
 
 public class AddExpNode {
     // AddExp -> MulExp | AddExp ('+' | '−') MulExp
-    private List<MulExpNode> mulExpNodes;
-    private List<Token> operations;
+    private MulExpNode mulExpNode;
+    private Token operator;
+    private AddExpNode addExpNode;
 
-    public AddExpNode(List<MulExpNode> mulExpNodes, List<Token> operations) {
-        this.mulExpNodes = mulExpNodes;
-        this.operations = operations;
+    public AddExpNode(MulExpNode mulExpNode, Token operator, AddExpNode addExpNode) {
+        this.mulExpNode = mulExpNode;
+        this.operator = operator;
+        this.addExpNode = addExpNode;
     }
 
-    public int getValue() {
-        int value = mulExpNodes.get(0).getValue();
-        for (int i = 1; i < mulExpNodes.size(); i++) {
-            if (operations.get(i - 1).getType() == TokenType.PLUS) {
-                value += mulExpNodes.get(i).getValue();
-            } else {
-                value -= mulExpNodes.get(i).getValue();
-            }
-        }
-        return value;
+    public MulExpNode getMulExpNode() {
+        return mulExpNode;
+    }
+
+    public Token getOperator() {
+        return operator;
+    }
+
+    public AddExpNode getAddExpNode() {
+        return addExpNode;
     }
 
     public void print() {
-        for (int i = 0; i < mulExpNodes.size(); i++) {
-            mulExpNodes.get(i).print();
-            IOUtils.write(Parser.nodeType.get(NodeType.AddExp));
-            if (i < operations.size()) {
-                IOUtils.write(operations.get(i).toString());
-            }
+        mulExpNode.print();
+        IOUtils.write(Parser.nodeType.get(NodeType.AddExp));
+        if (operator != null) {
+            IOUtils.write(operator.toString());
+            addExpNode.print();
         }
     }
 
     public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (MulExpNode mulExpNode : mulExpNodes) {
-            mulExpNode.fillSymbolTable(currentSymbolTable);
+        mulExpNode.fillSymbolTable(currentSymbolTable);
+        if (addExpNode != null) {
+            addExpNode.fillSymbolTable(currentSymbolTable);
         }
     }
 
     public FuncParam getFuncParam() {
-        return mulExpNodes.get(0).getFuncParam();
+        return mulExpNode.getFuncParam();
     }
 }

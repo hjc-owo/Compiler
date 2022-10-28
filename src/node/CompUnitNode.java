@@ -19,6 +19,18 @@ public class CompUnitNode {
         this.mainFuncDefNode = mainFuncDefNode;
     }
 
+    public List<DeclNode> getDeclNodes() {
+        return declNodes;
+    }
+
+    public List<FuncDefNode> getFuncDefNodes() {
+        return funcDefNodes;
+    }
+
+    public MainFuncDefNode getMainFuncDefNode() {
+        return mainFuncDefNode;
+    }
+
     public void print() {
         for (DeclNode declNode : declNodes) {
             declNode.print();

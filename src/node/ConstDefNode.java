@@ -30,6 +30,30 @@ public class ConstDefNode {
         this.constInitValNode = constInitValNode;
     }
 
+    public Token getIdent() {
+        return ident;
+    }
+
+    public List<Token> getLeftBrackets() {
+        return leftBrackets;
+    }
+
+    public List<ConstExpNode> getConstExpNodes() {
+        return constExpNodes;
+    }
+
+    public List<Token> getRightBrackets() {
+        return rightBrackets;
+    }
+
+    public Token getEqualToken() {
+        return equalToken;
+    }
+
+    public ConstInitValNode getConstInitValNode() {
+        return constInitValNode;
+    }
+
     public void print() {
         IOUtils.write(ident.toString());
         for (int i = 0; i < constExpNodes.size(); i++) {
@@ -59,7 +83,7 @@ public class ConstDefNode {
     private List<Integer> getDimLengths(SymbolTable currentSymbolTable) {
         List<Integer> dimLengths = new ArrayList<>();
         for (ConstExpNode constExpNode : constExpNodes) {
-            dimLengths.add(constExpNode.getValue());
+            dimLengths.add(1);
             constExpNode.fillSymbolTable(currentSymbolTable);
         }
         return dimLengths;

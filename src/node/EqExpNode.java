@@ -5,31 +5,43 @@ import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
-import java.util.List;
-
 public class EqExpNode {
     // RelExp | EqExp ('==' | '!=') RelExp
-    private List<RelExpNode> relExpNodes;
-    private List<Token> operations;
+    private RelExpNode relExpNode;
+    private Token operator;
+    private EqExpNode eqExpNode;
 
-    public EqExpNode(List<RelExpNode> relExpNodes, List<Token> operations) {
-        this.relExpNodes = relExpNodes;
-        this.operations = operations;
+    public EqExpNode(RelExpNode relExpNode, Token operator, EqExpNode eqExpNode) {
+        this.relExpNode = relExpNode;
+        this.operator = operator;
+        this.eqExpNode = eqExpNode;
+    }
+
+    public RelExpNode getRelExpNode() {
+        return relExpNode;
+    }
+
+    public Token getOperator() {
+        return operator;
+    }
+
+    public EqExpNode getEqExpNode() {
+        return eqExpNode;
     }
 
     public void print() {
-        for (int i = 0; i < relExpNodes.size(); i++) {
-            relExpNodes.get(i).print();
-            IOUtils.write(Parser.nodeType.get(NodeType.EqExp));
-            if (i < operations.size()) {
-                IOUtils.write(operations.get(i).toString());
-            }
+        relExpNode.print();
+        IOUtils.write(Parser.nodeType.get(NodeType.EqExp));
+        if (operator != null) {
+            IOUtils.write(operator.toString());
+            eqExpNode.print();
         }
     }
 
     public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (RelExpNode relExpNode : relExpNodes) {
-            relExpNode.fillSymbolTable(currentSymbolTable);
+        relExpNode.fillSymbolTable(currentSymbolTable);
+        if (eqExpNode != null) {
+            eqExpNode.fillSymbolTable(currentSymbolTable);
         }
     }
 }

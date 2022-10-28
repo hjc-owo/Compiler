@@ -9,28 +9,42 @@ import java.util.List;
 
 public class RelExpNode {
     // RelExp -> AddExp | RelExp ('<' | '>' | '<=' | '>=') AddExp
-    private List<AddExpNode> addExpNodes;
-    private List<Token> operations;
+    private AddExpNode addExpNode;
+    private Token operator;
+    private RelExpNode relExpNode;
 
 
-    public RelExpNode(List<AddExpNode> addExpNodes, List<Token> operations) {
-        this.addExpNodes = addExpNodes;
-        this.operations = operations;
+    public RelExpNode(AddExpNode addExpNode, Token operator, RelExpNode relExpNode) {
+        this.addExpNode = addExpNode;
+        this.operator = operator;
+        this.relExpNode = relExpNode;
+    }
+
+    public AddExpNode getAddExpNode() {
+        return addExpNode;
+    }
+
+    public Token getOperator() {
+        return operator;
+    }
+
+    public RelExpNode getRelExpNode() {
+        return relExpNode;
     }
 
     public void print() {
-        for (int i = 0; i < addExpNodes.size(); i++) {
-            addExpNodes.get(i).print();
-            IOUtils.write(Parser.nodeType.get(NodeType.RelExp));
-            if (i < operations.size()) {
-                IOUtils.write(operations.get(i).toString());
-            }
+        addExpNode.print();
+        IOUtils.write(Parser.nodeType.get(NodeType.RelExp));
+        if (operator != null) {
+            IOUtils.write(operator.toString());
+            relExpNode.print();
         }
     }
 
     public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (AddExpNode addExpNode : addExpNodes) {
-            addExpNode.fillSymbolTable(currentSymbolTable);
+        addExpNode.fillSymbolTable(currentSymbolTable);
+        if (relExpNode != null) {
+            relExpNode.fillSymbolTable(currentSymbolTable);
         }
     }
 }

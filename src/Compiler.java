@@ -10,9 +10,13 @@ import java.util.List;
 
 public class Compiler {
     private static List<Token> tokens = new ArrayList<>();
+    public static final int stage = 2;
+
+    public static int getStage() {
+        return stage;
+    }
 
     public static void main(String[] args) throws IOException {
-        final int stage = 2;
         final boolean error = true;
         IOUtils.delete("output.txt");
         IOUtils.delete("error.txt");
@@ -31,6 +35,9 @@ public class Compiler {
         }
 
         parser.fillSymbolTable();
+
+//        LLVMGenerator generator = new LLVMGenerator();
+//        generator.visitCompUnit(parser.getCompUnitNode());
 
         if (error) {
             ErrorHandler.printErrors();

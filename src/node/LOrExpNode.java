@@ -9,28 +9,41 @@ import java.util.List;
 
 public class LOrExpNode {
     // LOrExp -> LAndExp | LOrExp '||' LAndExp
+    private LAndExpNode lAndExpNode;
+    private Token orToken;
+    private LOrExpNode lOrExpNode;
 
-    private List<LAndExpNode> lAndExpNodes;
-    private List<Token> orTokens;
+    public LOrExpNode(LAndExpNode lAndExpNode, Token operator, LOrExpNode lOrExpNode) {
+        this.lAndExpNode = lAndExpNode;
+        this.orToken = operator;
+        this.lOrExpNode = lOrExpNode;
+    }
 
-    public LOrExpNode(List<LAndExpNode> lAndExpNodes, List<Token> orTokens) {
-        this.lAndExpNodes = lAndExpNodes;
-        this.orTokens = orTokens;
+    public LAndExpNode getlAndExpNode() {
+        return lAndExpNode;
+    }
+
+    public Token getOrToken() {
+        return orToken;
+    }
+
+    public LOrExpNode getlOrExpNode() {
+        return lOrExpNode;
     }
 
     public void print() {
-        for (int i = 0; i < lAndExpNodes.size(); i++) {
-            lAndExpNodes.get(i).print();
-            IOUtils.write(Parser.nodeType.get(NodeType.LOrExp));
-            if (i < orTokens.size()) {
-                IOUtils.write(orTokens.get(i).toString());
-            }
+        lAndExpNode.print();
+        IOUtils.write(Parser.nodeType.get(NodeType.LOrExp));
+        if (orToken != null) {
+            IOUtils.write(orToken.toString());
+            lOrExpNode.print();
         }
     }
 
     public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (LAndExpNode lAndExpNode : lAndExpNodes) {
-            lAndExpNode.fillSymbolTable(currentSymbolTable);
+        lAndExpNode.fillSymbolTable(currentSymbolTable);
+        if (lOrExpNode != null) {
+            lOrExpNode.fillSymbolTable(currentSymbolTable);
         }
     }
 }

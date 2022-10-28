@@ -23,6 +23,26 @@ public class ConstInitValNode {
         this.rightBraceToken = rightBraceToken;
     }
 
+    public ConstExpNode getConstExpNode() {
+        return constExpNode;
+    }
+
+    public Token getLeftBraceToken() {
+        return leftBraceToken;
+    }
+
+    public List<ConstInitValNode> getConstInitValNodes() {
+        return constInitValNodes;
+    }
+
+    public List<Token> getCommas() {
+        return commas;
+    }
+
+    public Token getRightBraceToken() {
+        return rightBraceToken;
+    }
+
     public void print() {
         if (constExpNode != null) {
             constExpNode.print();

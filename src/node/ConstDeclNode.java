@@ -23,6 +23,26 @@ public class ConstDeclNode {
         this.semicnToken = semicnToken;
     }
 
+    public Token getConstToken() {
+        return constToken;
+    }
+
+    public BTypeNode getbTypeNode() {
+        return bTypeNode;
+    }
+
+    public List<ConstDefNode> getConstDefNodes() {
+        return constDefNodes;
+    }
+
+    public List<Token> getCommas() {
+        return commas;
+    }
+
+    public Token getSemicnToken() {
+        return semicnToken;
+    }
+
     public void print() {
         IOUtils.write(constToken.toString());
         bTypeNode.print();

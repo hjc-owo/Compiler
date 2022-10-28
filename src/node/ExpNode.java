@@ -14,10 +14,6 @@ public class ExpNode {
         this.addExpNode = addExpNode;
     }
 
-    public int getValue() {
-        return addExpNode.getValue();
-    }
-
     public void print() {
         addExpNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.Exp));

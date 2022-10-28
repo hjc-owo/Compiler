@@ -63,7 +63,7 @@ public class VarDefNode {
     private List<Integer> getDimLengths(SymbolTable currentSymbolTable) {
         List<Integer> dimLengths = new ArrayList<>();
         for (ConstExpNode constExpNode : constExpNodes) {
-            dimLengths.add(constExpNode.getValue());
+            dimLengths.add(1);
             constExpNode.fillSymbolTable(currentSymbolTable);
         }
         return dimLengths;

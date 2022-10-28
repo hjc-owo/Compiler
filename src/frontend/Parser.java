@@ -24,6 +24,10 @@ public class Parser {
         this.tokens = tokens;
     }
 
+    public CompUnitNode getCompUnitNode() {
+        return compUnitNode;
+    }
+
     public void analyze() {
         this.compUnitNode = CompUnit();
     }
@@ -226,7 +230,7 @@ public class Parser {
         Token ident = match(TokenType.IDENFR);
         Token leftParentToken = match(TokenType.LPARENT);
         FuncFParamsNode funcParamsNode = null;
-        if (tokens.get(index).getType() != TokenType.RPARENT) {
+        if (tokens.get(index).getType() == TokenType.INTTK) {
             funcParamsNode = FuncFParams();
         }
         Token rightParentToken = match(TokenType.RPARENT);
@@ -405,18 +409,22 @@ public class Parser {
             } else {
                 // [Exp] ';'
                 ExpNode expNode = null;
-                if (tokens.get(index).getType() == TokenType.IDENFR ||
-                        tokens.get(index).getType() == TokenType.PLUS ||
-                        tokens.get(index).getType() == TokenType.MINU ||
-                        tokens.get(index).getType() == TokenType.NOT ||
-                        tokens.get(index).getType() == TokenType.LPARENT ||
-                        tokens.get(index).getType() == TokenType.INTCON) {
+                if (isExp()) {
                     expNode = Exp();
                 }
                 Token semicnToken = match(TokenType.SEMICN);
                 return new StmtNode(StmtType.Exp, expNode, semicnToken);
             }
         }
+    }
+
+    private boolean isExp() {
+        return tokens.get(index).getType() == TokenType.IDENFR ||
+                tokens.get(index).getType() == TokenType.PLUS ||
+                tokens.get(index).getType() == TokenType.MINU ||
+                tokens.get(index).getType() == TokenType.NOT ||
+                tokens.get(index).getType() == TokenType.LPARENT ||
+                tokens.get(index).getType() == TokenType.INTCON;
     }
 
     private ExpNode Exp() {
@@ -471,7 +479,7 @@ public class Parser {
             Token ident = match(TokenType.IDENFR);
             Token leftParentToken = match(TokenType.LPARENT);
             FuncRParamsNode funcRParamsNode = null;
-            if (tokens.get(index).getType() != TokenType.RPARENT) {
+            if (isExp()) {
                 funcRParamsNode = FuncRParams();
             }
             Token rightParentToken = match(TokenType.RPARENT);
@@ -512,97 +520,96 @@ public class Parser {
     }
 
     private MulExpNode MulExp() {
-        // MulExp -> UnaryExp { ('*' | '/' | '%') UnaryExp }
-        List<UnaryExpNode> unaryExpNodes = new ArrayList<>();
-        List<Token> operations = new ArrayList<>();
-        unaryExpNodes.add(UnaryExp());
-        while (tokens.get(index).getType() == TokenType.MULT || tokens.get(index).getType() == TokenType.DIV || tokens.get(index).getType() == TokenType.MOD) {
-            if (tokens.get(index).getType() == TokenType.MULT) {
-                operations.add(match(TokenType.MULT));
-            } else if (tokens.get(index).getType() == TokenType.DIV) {
-                operations.add(match(TokenType.DIV));
-            } else {
-                operations.add(match(TokenType.MOD));
-            }
-            unaryExpNodes.add(UnaryExp());
+        // MulExp -> UnaryExp | MulExp ('\*' | '/' | '%') UnaryExp
+        UnaryExpNode unaryExpNode = UnaryExp();
+        Token operator = null;
+        MulExpNode mulExpNode = null;
+        if (tokens.get(index).getType() == TokenType.MULT) {
+            operator = match(TokenType.MULT);
+            mulExpNode = MulExp();
+        } else if (tokens.get(index).getType() == TokenType.DIV) {
+            operator = match(TokenType.DIV);
+            mulExpNode = MulExp();
+        } else if (tokens.get(index).getType() == TokenType.MOD) {
+            operator = match(TokenType.MOD);
+            mulExpNode = MulExp();
         }
-        return new MulExpNode(unaryExpNodes, operations);
+        return new MulExpNode(unaryExpNode, operator, mulExpNode);
     }
 
     private AddExpNode AddExp() {
-        // AddExp -> MulExp { ('+' | '−') MulExp }
-        List<MulExpNode> mulExpNodes = new ArrayList<>();
-        List<Token> operations = new ArrayList<>();
-        mulExpNodes.add(MulExp());
-        while (tokens.get(index).getType() == TokenType.PLUS || tokens.get(index).getType() == TokenType.MINU) {
-            if (tokens.get(index).getType() == TokenType.PLUS) {
-                operations.add(match(TokenType.PLUS));
-            } else if (tokens.get(index).getType() == TokenType.MINU) {
-                operations.add(match(TokenType.MINU));
-            }
-            mulExpNodes.add(MulExp());
+        // AddExp -> MulExp | AddExp ('+' | '−') MulExp
+        MulExpNode mulExpNode = MulExp();
+        Token operator = null;
+        AddExpNode addExpNode = null;
+        if (tokens.get(index).getType() == TokenType.PLUS) {
+            operator = match(TokenType.PLUS);
+            addExpNode = AddExp();
+        } else if (tokens.get(index).getType() == TokenType.MINU) {
+            operator = match(TokenType.MINU);
+            addExpNode = AddExp();
         }
-        return new AddExpNode(mulExpNodes, operations);
+        return new AddExpNode(mulExpNode, operator, addExpNode);
     }
 
     private RelExpNode RelExp() {
-        // RelExp -> AddExp { ('<' | '>' | '<=' | '>=') AddExp }
-        List<AddExpNode> addExpNodes = new ArrayList<>();
-        List<Token> operations = new ArrayList<>();
-        addExpNodes.add(AddExp());
-        while (tokens.get(index).getType() == TokenType.LSS || tokens.get(index).getType() == TokenType.LEQ || tokens.get(index).getType() == TokenType.GRE || tokens.get(index).getType() == TokenType.GEQ) {
-            if (tokens.get(index).getType() == TokenType.LSS) {
-                operations.add(match(TokenType.LSS));
-            } else if (tokens.get(index).getType() == TokenType.LEQ) {
-                operations.add(match(TokenType.LEQ));
-            } else if (tokens.get(index).getType() == TokenType.GRE) {
-                operations.add(match(TokenType.GRE));
-            } else {
-                operations.add(match(TokenType.GEQ));
-            }
-            addExpNodes.add(AddExp());
+        // RelExp -> AddExp | RelExp ('<' | '>' | '<=' | '>=') AddExp
+        AddExpNode addExpNode = AddExp();
+        Token operator = null;
+        RelExpNode relExpNode = null;
+        if (tokens.get(index).getType() == TokenType.LSS) {
+            operator = match(TokenType.LSS);
+            relExpNode = RelExp();
+        } else if (tokens.get(index).getType() == TokenType.GRE) {
+            operator = match(TokenType.GRE);
+            relExpNode = RelExp();
+        } else if (tokens.get(index).getType() == TokenType.LEQ) {
+            operator = match(TokenType.LEQ);
+            relExpNode = RelExp();
+        } else if (tokens.get(index).getType() == TokenType.GEQ) {
+            operator = match(TokenType.GEQ);
+            relExpNode = RelExp();
         }
-        return new RelExpNode(addExpNodes, operations);
+        return new RelExpNode(addExpNode, operator, relExpNode);
     }
 
     private EqExpNode EqExp() {
-        // EqExp -> RelExp { ('==' | '!=') RelExp }
-        List<RelExpNode> relExpNodes = new ArrayList<>();
-        List<Token> operations = new ArrayList<>();
-        relExpNodes.add(RelExp());
-        while (tokens.get(index).getType() == TokenType.EQL || tokens.get(index).getType() == TokenType.NEQ) {
-            if (tokens.get(index).getType() == TokenType.EQL) {
-                operations.add(match(TokenType.EQL));
-            } else {
-                operations.add(match(TokenType.NEQ));
-            }
-            relExpNodes.add(RelExp());
+        // EqExp -> RelExp | EqExp ('\=\=' | '!=') RelExp
+        RelExpNode relExpNode = RelExp();
+        Token operator = null;
+        EqExpNode eqExpNode = null;
+        if (tokens.get(index).getType() == TokenType.EQL) {
+            operator = match(TokenType.EQL);
+            eqExpNode = EqExp();
+        } else if (tokens.get(index).getType() == TokenType.NEQ) {
+            operator = match(TokenType.NEQ);
+            eqExpNode = EqExp();
         }
-        return new EqExpNode(relExpNodes, operations);
+        return new EqExpNode(relExpNode, operator, eqExpNode);
     }
 
     private LAndExpNode LAndExp() {
-        // LAndExp -> EqExp { '&&' EqExp }
-        List<EqExpNode> eqExpNodes = new ArrayList<>();
-        List<Token> andTokens = new ArrayList<>();
-        eqExpNodes.add(EqExp());
-        while (tokens.get(index).getType() == TokenType.AND) {
-            andTokens.add(match(TokenType.AND));
-            eqExpNodes.add(EqExp());
+        // LAndExp -> EqExp | LAndExp '&&' EqExp
+        EqExpNode eqExpNode = EqExp();
+        Token operator = null;
+        LAndExpNode lAndExpNode = null;
+        if (tokens.get(index).getType() == TokenType.AND) {
+            operator = match(TokenType.AND);
+            lAndExpNode = LAndExp();
         }
-        return new LAndExpNode(eqExpNodes, andTokens);
+        return new LAndExpNode(eqExpNode, operator, lAndExpNode);
     }
 
     private LOrExpNode LOrExp() {
-        // LOrExp -> LAndExp { '||' LAndExp }
-        List<LAndExpNode> lAndExpNodes = new ArrayList<>();
-        List<Token> orTokens = new ArrayList<>();
-        lAndExpNodes.add(LAndExp());
-        while (tokens.get(index).getType() == TokenType.OR) {
-            orTokens.add(match(TokenType.OR));
-            lAndExpNodes.add(LAndExp());
+        // LOrExp -> LAndExp | LOrExp '||' LAndExp
+        LAndExpNode lAndExpNode = LAndExp();
+        Token operator = null;
+        LOrExpNode lOrExpNode = null;
+        if (tokens.get(index).getType() == TokenType.OR) {
+            operator = match(TokenType.OR);
+            lOrExpNode = LOrExp();
         }
-        return new LOrExpNode(lAndExpNodes, orTokens);
+        return new LOrExpNode(lAndExpNode, operator, lOrExpNode);
     }
 
     private ConstExpNode ConstExp() {
@@ -613,18 +620,18 @@ public class Parser {
     private Token match(TokenType tokenType) {
         if (tokens.get(index).getType() == tokenType) {
             return tokens.get(index++);
+        } else if (tokenType == TokenType.SEMICN) {
+            ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.i));
+            return new Token(TokenType.SEMICN, tokens.get(index - 1).getLineNumber(), ";");
+        } else if (tokenType == TokenType.RPARENT) {
+            ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.j));
+            return new Token(TokenType.RPARENT, tokens.get(index - 1).getLineNumber(), ")");
+        } else if (tokenType == TokenType.RBRACK) {
+            ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.k));
+            return new Token(TokenType.RBRACK, tokens.get(index - 1).getLineNumber(), "]");
         } else {
-            if (tokenType == TokenType.SEMICN) {
-                ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.i));
-                return new Token(TokenType.SEMICN, tokens.get(index - 1).getLineNumber(), ";");
-            } else if (tokenType == TokenType.RPARENT) {
-                ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.j));
-                return new Token(TokenType.RPARENT, tokens.get(index - 1).getLineNumber(), ")");
-            } else if (tokenType == TokenType.RBRACK) {
-                ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.k));
-                return new Token(TokenType.RBRACK, tokens.get(index - 1).getLineNumber(), "]");
-            }
-            return new Token(tokenType, tokens.get(index - 1).getLineNumber(), "");
+            System.out.println("Syntax error at line " + tokens.get(index).getLineNumber() + ": " + tokens.get(index).getContent());
+            throw new RuntimeException("Syntax error at line " + tokens.get(index).getLineNumber() + ": " + tokens.get(index).getContent() + " is not " + tokenType);
         }
     }
 
