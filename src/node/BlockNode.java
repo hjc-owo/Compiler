@@ -25,6 +25,10 @@ public class BlockNode {
         this.rightBraceToken = rightBraceToken;
     }
 
+    public List<BlockItemNode> getBlockItemNodes() {
+        return blockItemNodes;
+    }
+
     public void print() {
         IOUtils.write(leftBraceToken.toString());
         for (BlockItemNode blockItemNode : blockItemNodes) {

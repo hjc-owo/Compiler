@@ -1,6 +1,8 @@
 import error.ErrorHandler;
 import frontend.Lexer;
 import frontend.Parser;
+import ir.IRModule;
+import ir.LLVMGenerator;
 import token.Token;
 import utils.IOUtils;
 
@@ -20,6 +22,7 @@ public class Compiler {
         final boolean error = true;
         IOUtils.delete("output.txt");
         IOUtils.delete("error.txt");
+        IOUtils.delete("llvm_ir.txt");
         String content = IOUtils.read("testfile.txt");
 
         Lexer lexer = new Lexer(tokens);
@@ -34,10 +37,13 @@ public class Compiler {
             parser.printParseAns();
         }
 
-        parser.fillSymbolTable();
+        parser.fillSymbolTable(); // 错误处理的符号表系统
 
-//        LLVMGenerator generator = new LLVMGenerator();
-//        generator.visitCompUnit(parser.getCompUnitNode());
+        LLVMGenerator generator = new LLVMGenerator();
+        generator.visitCompUnit(parser.getCompUnitNode());
+        if (stage == 3) {
+            IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");
+        }
 
         if (error) {
             ErrorHandler.printErrors();

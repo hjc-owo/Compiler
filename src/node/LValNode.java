@@ -29,9 +29,8 @@ public class LValNode {
         return ident;
     }
 
-    public int getValue() {
-        return 0;
-        // todo
+    public List<ExpNode> getExpNodes() {
+        return expNodes;
     }
 
     public void print() {
@@ -55,5 +54,13 @@ public class LValNode {
 
     public FuncParam getFuncParam() {
         return new FuncParam(ident.getContent(), expNodes.size());
+    }
+
+    public String getStr() {
+        StringBuilder s = new StringBuilder(ident.getContent());
+        for (ExpNode expNode : expNodes) {
+            s.append("[").append(expNode.getStr()).append("]");
+        }
+        return s.toString();
     }
 }

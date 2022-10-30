@@ -125,6 +125,82 @@ public class StmtNode {
         this.semicnToken = semicnToken;
     }
 
+    public Parser.StmtType getType() {
+        return type;
+    }
+
+    public LValNode getLValNode() {
+        return lValNode;
+    }
+
+    public Token getAssignToken() {
+        return assignToken;
+    }
+
+    public ExpNode getExpNode() {
+        return expNode;
+    }
+
+    public Token getSemicnToken() {
+        return semicnToken;
+    }
+
+    public BlockNode getBlockNode() {
+        return blockNode;
+    }
+
+    public Token getIfToken() {
+        return ifToken;
+    }
+
+    public Token getLeftParentToken() {
+        return leftParentToken;
+    }
+
+    public CondNode getCondNode() {
+        return condNode;
+    }
+
+    public Token getRightParentToken() {
+        return rightParentToken;
+    }
+
+    public List<StmtNode> getStmtNodes() {
+        return stmtNodes;
+    }
+
+    public Token getElseToken() {
+        return elseToken;
+    }
+
+    public Token getWhileToken() {
+        return whileToken;
+    }
+
+    public Token getBreakOrContinueToken() {
+        return breakOrContinueToken;
+    }
+
+    public Token getGetintToken() {
+        return getintToken;
+    }
+
+    public Token getPrintfToken() {
+        return printfToken;
+    }
+
+    public Token getFormatString() {
+        return formatString;
+    }
+
+    public List<Token> getCommas() {
+        return commas;
+    }
+
+    public List<ExpNode> getExpNodes() {
+        return expNodes;
+    }
+
     public Token getReturnToken() {
         return returnToken;
     }

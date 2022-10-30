@@ -30,6 +30,18 @@ public class VarDefNode {
         this.initValNode = initValNode;
     }
 
+    public Token getIdent() {
+        return ident;
+    }
+
+    public List<ConstExpNode> getConstExpNodes() {
+        return constExpNodes;
+    }
+
+    public InitValNode getInitValNode() {
+        return initValNode;
+    }
+
     public void print() {
         IOUtils.write(ident.toString());
         for (int i = 0; i < leftBrackets.size(); i++) {

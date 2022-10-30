@@ -30,6 +30,26 @@ public class FuncFParamNode {
         this.constExpNodes = constExpNodes;
     }
 
+    public BTypeNode getbTypeNode() {
+        return bTypeNode;
+    }
+
+    public Token getIdent() {
+        return ident;
+    }
+
+    public List<Token> getLeftBrackets() {
+        return leftBrackets;
+    }
+
+    public List<Token> getRightBrackets() {
+        return rightBrackets;
+    }
+
+    public List<ConstExpNode> getConstExpNodes() {
+        return constExpNodes;
+    }
+
     public void print() {
         bTypeNode.print();
         IOUtils.write(ident.toString());

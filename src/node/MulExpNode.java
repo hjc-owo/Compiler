@@ -53,4 +53,8 @@ public class MulExpNode {
     public FuncParam getFuncParam() {
         return unaryExpNode.getFuncParam();
     }
+
+    public String getStr() {
+        return unaryExpNode.getStr() + (operator == null ? "" : operator.getContent() + mulExpNode.getStr());
+    }
 }

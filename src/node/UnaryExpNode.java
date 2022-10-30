@@ -6,7 +6,6 @@ import error.ErrorType;
 import frontend.Parser;
 import symbol.*;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.ArrayList;
@@ -37,6 +36,34 @@ public class UnaryExpNode {
     public UnaryExpNode(UnaryOpNode unaryOpNode, UnaryExpNode unaryExpNode) {
         this.unaryOpNode = unaryOpNode;
         this.unaryExpNode = unaryExpNode;
+    }
+
+    public PrimaryExpNode getPrimaryExpNode() {
+        return primaryExpNode;
+    }
+
+    public Token getIdent() {
+        return ident;
+    }
+
+    public Token getLeftParentToken() {
+        return leftParentToken;
+    }
+
+    public FuncRParamsNode getFuncRParamsNode() {
+        return funcRParamsNode;
+    }
+
+    public Token getRightParentToken() {
+        return rightParentToken;
+    }
+
+    public UnaryOpNode getUnaryOpNode() {
+        return unaryOpNode;
+    }
+
+    public UnaryExpNode getUnaryExpNode() {
+        return unaryExpNode;
     }
 
     public void print() {
@@ -115,6 +142,16 @@ public class UnaryExpNode {
             return null;
         } else {
             return unaryExpNode.getFuncParam();
+        }
+    }
+
+    public String getStr() {
+        if (primaryExpNode != null) {
+            return primaryExpNode.getStr();
+        } else if (ident != null) {
+            return ident.getContent();
+        } else {
+            return unaryExpNode.getStr();
         }
     }
 }

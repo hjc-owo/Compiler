@@ -14,6 +14,10 @@ public class FuncTypeNode {
         this.token = token;
     }
 
+    public Token getToken() {
+        return token;
+    }
+
     public void print() {
         IOUtils.write(token.toString());
         IOUtils.write(Parser.nodeType.get(NodeType.FuncType));

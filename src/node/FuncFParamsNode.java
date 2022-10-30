@@ -20,6 +20,10 @@ public class FuncFParamsNode {
         this.commas = commas;
     }
 
+    public List<FuncFParamNode> getFuncFParamNodes() {
+        return funcFParamNodes;
+    }
+
     public void print() {
         funcFParamNodes.get(0).print();
         for (int i = 1; i < funcFParamNodes.size(); i++) {

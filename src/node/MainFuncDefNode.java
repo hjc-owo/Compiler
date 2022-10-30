@@ -24,6 +24,10 @@ public class MainFuncDefNode {
         this.blockNode = blockNode;
     }
 
+    public BlockNode getBlockNode() {
+        return blockNode;
+    }
+
     public void print() {
         IOUtils.write(intToken.toString());
         IOUtils.write(mainToken.toString());

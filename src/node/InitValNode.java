@@ -23,6 +23,14 @@ public class InitValNode {
         this.rightBraceToken = rightBraceToken;
     }
 
+    public ExpNode getExpNode() {
+        return expNode;
+    }
+
+    public List<InitValNode> getInitValNodes() {
+        return initValNodes;
+    }
+
     public void print() {
         if (expNode != null) {
             expNode.print();

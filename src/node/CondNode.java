@@ -13,6 +13,10 @@ public class CondNode {
         this.lOrExpNode = lOrExpNode;
     }
 
+    public LOrExpNode getLOrExpNode() {
+        return lOrExpNode;
+    }
+
     public void print() {
         lOrExpNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.Cond));

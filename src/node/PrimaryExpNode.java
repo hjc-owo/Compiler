@@ -29,6 +29,26 @@ public class PrimaryExpNode {
         this.numberNode = numberNode;
     }
 
+    public Token getLeftParentToken() {
+        return leftParentToken;
+    }
+
+    public ExpNode getExpNode() {
+        return expNode;
+    }
+
+    public Token getRightParentToken() {
+        return rightParentToken;
+    }
+
+    public LValNode getLValNode() {
+        return lValNode;
+    }
+
+    public NumberNode getNumberNode() {
+        return numberNode;
+    }
+
     public void print() {
         if (expNode != null) {
             IOUtils.write(leftParentToken.toString());
@@ -57,6 +77,16 @@ public class PrimaryExpNode {
             return lValNode.getFuncParam();
         } else {
             return new FuncParam(null, 0);
+        }
+    }
+
+    public String getStr() {
+        if (expNode != null) {
+            return "(" + expNode.getStr() + ")";
+        } else if (lValNode != null) {
+            return lValNode.getStr();
+        } else {
+            return numberNode.getStr();
         }
     }
 }

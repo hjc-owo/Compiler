@@ -21,6 +21,10 @@ public class VarDeclNode {
         this.semicn = semicn;
     }
 
+    public List<VarDefNode> getVarDefNodes() {
+        return varDefNodes;
+    }
+
     public void print() {
         bTypeNode.print();
         varDefNodes.get(0).print();

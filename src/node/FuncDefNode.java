@@ -31,6 +31,22 @@ public class FuncDefNode {
         this.blockNode = blockNode;
     }
 
+    public FuncTypeNode getFuncTypeNode() {
+        return funcTypeNode;
+    }
+
+    public Token getIdent() {
+        return ident;
+    }
+
+    public FuncFParamsNode getFuncFParamsNode() {
+        return funcFParamsNode;
+    }
+
+    public BlockNode getBlockNode() {
+        return blockNode;
+    }
+
     public void print() {
         funcTypeNode.print();
         IOUtils.write(ident.toString());
