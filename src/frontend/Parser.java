@@ -4,7 +4,6 @@ import error.Error;
 import error.ErrorHandler;
 import error.ErrorType;
 import node.*;
-import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 

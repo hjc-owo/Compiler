@@ -1,11 +1,8 @@
 package node;
 
 import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
-
-import java.util.List;
 
 public class RelExpNode {
     // RelExp -> AddExp | RelExp ('<' | '>' | '<=' | '>=') AddExp

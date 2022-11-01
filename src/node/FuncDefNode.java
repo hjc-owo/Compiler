@@ -1,16 +1,8 @@
 package node;
 
-import error.Error;
-import error.ErrorHandler;
-import error.ErrorType;
 import frontend.Parser;
-import symbol.FuncSymbol;
-import symbol.FuncSymbolTable;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
-
-import java.util.ArrayList;
 
 public class FuncDefNode {
     // FuncDef -> FuncType Ident '(' [FuncFParams] ')' Block

@@ -1,8 +1,6 @@
 package node;
 
 import frontend.Parser;
-import symbol.FuncParam;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -60,16 +58,6 @@ public class PrimaryExpNode {
             numberNode.print();
         }
         IOUtils.write(Parser.nodeType.get(NodeType.PrimaryExp));
-    }
-
-    public FuncParam getFuncParam() {
-        if (expNode != null) {
-            return expNode.getFuncParam();
-        } else if (lValNode != null) {
-            return lValNode.getFuncParam();
-        } else {
-            return new FuncParam(null, 0);
-        }
     }
 
     public String getStr() {

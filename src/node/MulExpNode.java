@@ -1,13 +1,8 @@
 package node;
 
 import frontend.Parser;
-import symbol.FuncParam;
-import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
-
-import java.util.List;
 
 public class MulExpNode {
     // MulExp -> UnaryExp | MulExp ('*' | '/' | '%') UnaryExp
@@ -41,10 +36,6 @@ public class MulExpNode {
             IOUtils.write(operator.toString());
             mulExpNode.print();
         }
-    }
-
-    public FuncParam getFuncParam() {
-        return unaryExpNode.getFuncParam();
     }
 
     public String getStr() {

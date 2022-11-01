@@ -1,16 +1,8 @@
 package node;
 
-import error.Error;
-import error.ErrorHandler;
-import error.ErrorType;
 import frontend.Parser;
-import symbol.*;
 import token.Token;
 import utils.IOUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 public class UnaryExpNode {
     // UnaryExp -> PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
@@ -81,16 +73,6 @@ public class UnaryExpNode {
             unaryExpNode.print();
         }
         IOUtils.write(Parser.nodeType.get(NodeType.UnaryExp));
-    }
-
-    public FuncParam getFuncParam() {
-        if (primaryExpNode != null) {
-            return primaryExpNode.getFuncParam();
-        } else if (ident != null) {
-            return null;
-        } else {
-            return unaryExpNode.getFuncParam();
-        }
     }
 
     public String getStr() {

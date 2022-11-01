@@ -1,11 +1,6 @@
 package node;
 
-import error.Error;
-import error.ErrorHandler;
-import error.ErrorType;
 import frontend.Parser;
-import symbol.FuncParam;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -41,10 +36,6 @@ public class LValNode {
             IOUtils.write(rightBrackets.get(i).toString());
         }
         IOUtils.write(Parser.nodeType.get(NodeType.LVal));
-    }
-
-    public FuncParam getFuncParam() {
-        return new FuncParam(ident.getContent(), expNodes.size());
     }
 
     public String getStr() {

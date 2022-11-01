@@ -1,8 +1,6 @@
 package node;
 
 import frontend.Parser;
-import symbol.FuncParam;
-import symbol.SymbolTable;
 import utils.IOUtils;
 
 public class ExpNode {
@@ -21,10 +19,6 @@ public class ExpNode {
     public void print() {
         addExpNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.Exp));
-    }
-
-    public FuncParam getFuncParam() {
-        return addExpNode.getFuncParam();
     }
 
     public String getStr() {

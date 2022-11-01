@@ -1,7 +1,5 @@
 package node;
 
-import symbol.SymbolTable;
-
 public class BlockItemNode {
     // BlockItem -> Decl | Stmt
     private DeclNode declNode;

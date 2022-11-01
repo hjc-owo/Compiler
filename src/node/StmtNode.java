@@ -1,13 +1,6 @@
 package node;
 
-import error.Error;
-import error.ErrorHandler;
-import error.ErrorType;
 import frontend.Parser;
-import symbol.ArraySymbol;
-import symbol.FuncSymbolTable;
-import symbol.FuncType;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 

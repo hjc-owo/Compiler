@@ -133,7 +133,11 @@ public class ErrorHandler {
         if (funcDefNode.getFuncFParamsNode() == null) {
             currentSymbolTable.put(funcDefNode.getIdent().getContent(), new FuncSymbol(funcDefNode.getIdent().getContent(), funcDefNode.getFuncTypeNode().getType(), new ArrayList<>()));
         } else {
-            currentSymbolTable.put(funcDefNode.getIdent().getContent(), new FuncSymbol(funcDefNode.getIdent().getContent(), funcDefNode.getFuncTypeNode().getType(), funcDefNode.getFuncFParamsNode().getParams()));
+            List<FuncParam> params = new ArrayList<>();
+            for (FuncFParamNode funcFParamNode : funcDefNode.getFuncFParamsNode().getFuncFParamNodes()) {
+                params.add(new FuncParam(funcFParamNode.getIdent().getContent(), funcFParamNode.getLeftBrackets().size()));
+            }
+            currentSymbolTable.put(funcDefNode.getIdent().getContent(), new FuncSymbol(funcDefNode.getIdent().getContent(), funcDefNode.getFuncTypeNode().getType(), params));
         }
         SymbolTable table = currentSymbolTable;
         currentSymbolTable = new FuncSymbolTable(currentSymbolTable, funcDefNode.getFuncTypeNode().getType());
@@ -291,6 +295,11 @@ public class ErrorHandler {
         addExpError(expNode.getAddExpNode());
     }
 
+    private FuncParam getFuncParamInExp(ExpNode expNode) {
+        // Exp -> AddExp
+        return getFuncParamInAddExp(expNode.getAddExpNode());
+    }
+
     private void condError(CondNode condNode) {
         // Cond -> LOrExp
         lOrExpError(condNode.getLOrExpNode());
@@ -306,12 +315,27 @@ public class ErrorHandler {
         }
     }
 
+    private FuncParam getFuncParamInLVal(LValNode lValNode) {
+        return new FuncParam(lValNode.getIdent().getContent(), lValNode.getExpNodes().size());
+    }
+
     private void primaryExpError(PrimaryExpNode primaryExpNode) {
         // PrimaryExp -> '(' Exp ')' | LVal | Number
         if (primaryExpNode.getExpNode() != null) {
             expError(primaryExpNode.getExpNode());
         } else if (primaryExpNode.getLValNode() != null) {
             lValError(primaryExpNode.getLValNode());
+        }
+    }
+
+    private FuncParam getFuncParamInPrimaryExp(PrimaryExpNode primaryExpNode) {
+        // PrimaryExp -> '(' Exp ')' | LVal | Number
+        if (primaryExpNode.getExpNode() != null) {
+            return getFuncParamInExp(primaryExpNode.getExpNode());
+        } else if (primaryExpNode.getLValNode() != null) {
+            return getFuncParamInLVal(primaryExpNode.getLValNode());
+        } else {
+            return new FuncParam(null, 0);
         }
     }
 
@@ -341,17 +365,17 @@ public class ErrorHandler {
                     List<Integer> funcRParamDimensions = new ArrayList<>();
                     if (unaryExpNode.getFuncRParamsNode() != null) {
                         for (ExpNode expNode : unaryExpNode.getFuncRParamsNode().getExpNodes()) {
-                            FuncParam funcRParam = expNode.getFuncParam();
+                            FuncParam funcRParam = getFuncParamInExp(expNode);
                             if (funcRParam != null) {
-                                if (funcRParam.getName() != null) {
+                                if (funcRParam.getName() == null) {
+                                    funcRParamDimensions.add(funcRParam.getDimension());
+                                } else {
                                     Symbol symbol2 = currentSymbolTable.get(funcRParam.getName());
                                     if (symbol2 instanceof ArraySymbol) {
                                         funcRParamDimensions.add(((ArraySymbol) symbol2).getDimension() - funcRParam.getDimension());
                                     } else if (symbol2 instanceof FuncSymbol) {
                                         funcRParamDimensions.add(((FuncSymbol) symbol2).getType() == FuncType.VOID ? -1 : 0);
                                     }
-                                } else {
-                                    funcRParamDimensions.add(funcRParam.getDimension());
                                 }
                             }
                         }
@@ -368,6 +392,16 @@ public class ErrorHandler {
         }
     }
 
+    private FuncParam getFuncParamInUnaryExp(UnaryExpNode unaryExpNode) {
+        if (unaryExpNode.getPrimaryExpNode() != null) {
+            return getFuncParamInPrimaryExp(unaryExpNode.getPrimaryExpNode());
+        } else if (unaryExpNode.getIdent() != null) {
+            return null;
+        } else {
+            return getFuncParamInUnaryExp(unaryExpNode.getUnaryExpNode());
+        }
+    }
+
     private void mulExpError(MulExpNode mulExpNode) {
         // MulExp -> UnaryExp | UnaryExp ('\*' | '/' | '%') MulExp
         unaryExpError(mulExpNode.getUnaryExpNode());
@@ -376,12 +410,21 @@ public class ErrorHandler {
         }
     }
 
+    private FuncParam getFuncParamInMulExp(MulExpNode mulExpNode) {
+        return getFuncParamInUnaryExp(mulExpNode.getUnaryExpNode());
+    }
+
     private void addExpError(AddExpNode addExpNode) {
         // AddExp -> MulExp | MulExp ('+' | '-') AddExp
         mulExpError(addExpNode.getMulExpNode());
         if (addExpNode.getAddExpNode() != null) {
             addExpError(addExpNode.getAddExpNode());
         }
+    }
+
+    private FuncParam getFuncParamInAddExp(AddExpNode addExpNode) {
+        // AddExp -> MulExp | MulExp ('+' | '-') AddExp
+        return getFuncParamInMulExp(addExpNode.getMulExpNode());
     }
 
     private void relExpError(RelExpNode relExpNode) {

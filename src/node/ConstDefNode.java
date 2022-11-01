@@ -1,15 +1,9 @@
 package node;
 
-import error.Error;
-import error.ErrorHandler;
-import error.ErrorType;
 import frontend.Parser;
-import symbol.ArraySymbol;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ConstDefNode {

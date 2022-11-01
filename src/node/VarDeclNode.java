@@ -1,7 +1,6 @@
 package node;
 
 import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 

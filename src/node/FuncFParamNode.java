@@ -1,16 +1,9 @@
 package node;
 
-import error.Error;
-import error.ErrorHandler;
-import error.ErrorType;
 import frontend.Parser;
-import symbol.ArraySymbol;
-import symbol.FuncParam;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FuncFParamNode {
@@ -63,9 +56,5 @@ public class FuncFParamNode {
             }
         }
         IOUtils.write(Parser.nodeType.get(NodeType.FuncFParam));
-    }
-
-    public FuncParam getParam() {
-        return new FuncParam(ident.getContent(), leftBrackets.size());
     }
 }

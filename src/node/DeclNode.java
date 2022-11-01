@@ -1,7 +1,5 @@
 package node;
 
-import symbol.SymbolTable;
-
 public class DeclNode {
     // Decl -> ConstDecl | VarDecl
     private ConstDeclNode constDecl;

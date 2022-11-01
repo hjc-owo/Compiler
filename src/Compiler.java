@@ -1,8 +1,6 @@
 import error.ErrorHandler;
 import frontend.Lexer;
 import frontend.Parser;
-//import ir.IRModule;
-//import ir.LLVMGenerator;
 import token.Token;
 import utils.IOUtils;
 

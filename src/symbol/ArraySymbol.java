@@ -1,7 +1,5 @@
 package symbol;
 
-import java.util.List;
-
 public class ArraySymbol extends Symbol {
 
     private boolean isConst; // 是否是常量
