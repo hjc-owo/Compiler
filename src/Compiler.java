@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Compiler {
     private static List<Token> tokens = new ArrayList<>();
-    public static final int stage = 2;
+    public static final int stage = 3;
 
     public static int getStage() {
         return stage;

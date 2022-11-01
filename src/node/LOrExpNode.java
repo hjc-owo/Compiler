@@ -19,7 +19,7 @@ public class LOrExpNode {
         this.lOrExpNode = lOrExpNode;
     }
 
-    public LAndExpNode getlAndExpNode() {
+    public LAndExpNode getLAndExpNode() {
         return lAndExpNode;
     }
 
@@ -27,7 +27,7 @@ public class LOrExpNode {
         return orToken;
     }
 
-    public LOrExpNode getlOrExpNode() {
+    public LOrExpNode getLOrExpNode() {
         return lOrExpNode;
     }
 

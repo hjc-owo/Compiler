@@ -384,7 +384,7 @@ public class Parser {
             Token semicnToken = match(TokenType.SEMICN);
             return new StmtNode(StmtType.Return, returnToken, expNode, semicnToken);
         } else {
-            int assign = index, semicn = index;
+            int assign = index;
             for (int i = index; i < tokens.size() && tokens.get(i).getLineNumber() == tokens.get(index).getLineNumber(); i++) {
                 if (tokens.get(i).getType() == TokenType.ASSIGN) {
                     assign = i;

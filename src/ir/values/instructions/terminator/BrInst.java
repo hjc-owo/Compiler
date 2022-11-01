@@ -14,8 +14,9 @@ public class BrInst extends TerminatorInst {
         this.addOperand(trueBlock);
         // 添加前驱后继
         if (basicBlock != null) {
-            if (!(basicBlock.getInstructions().getEnd().getValue() instanceof BrInst) &&
-                    !(basicBlock.getInstructions().getEnd().getValue() instanceof RetInst)) {
+            if (basicBlock.getInstructions().getEnd() == null ||
+                    (!(basicBlock.getInstructions().getEnd().getValue() instanceof BrInst) &&
+                            !(basicBlock.getInstructions().getEnd().getValue() instanceof RetInst))) {
                 basicBlock.addSuccessor(trueBlock);
                 trueBlock.addSuccessor(basicBlock);
             }
@@ -48,7 +49,7 @@ public class BrInst extends TerminatorInst {
         if (this.getOperands().size() == 1) {
             return "br label %" + this.getOperands().get(0).getName();
         } else {
-            return "br " + this.getOperands().get(0).toString() + ", label %" + this.getOperands().get(1).getName() + ", label %" + this.getOperands().get(2).getName();
+            return "br " + this.getOperands().get(0).getType() + " " + this.getOperands().get(0).getName() + ", label %" + this.getOperands().get(1).getName() + ", label %" + this.getOperands().get(2).getName();
         }
     }
 }

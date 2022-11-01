@@ -12,6 +12,8 @@ public class LLVMGenerator {
     private BuildFactory buildFactory = BuildFactory.getInstance();
 
     private BasicBlock curBlock = null;
+    private BasicBlock curTrueBlock = null;
+    private BasicBlock curFalseBlock = null;
     private Function curFunction = null;
 
     /**
@@ -405,6 +407,57 @@ public class LLVMGenerator {
                 tmpValue = buildFactory.buildCall(curBlock, (Function) getValue("getint"), new ArrayList<>());
                 buildFactory.buildStore(curBlock, input, tmpValue);
                 break;
+            case If:
+                if (stmtNode.getElseToken() == null) {
+                    // basicBlock;
+                    // if (...) {
+                    //    trueBlock;
+                    //    ...
+                    //    trueEndBlock;
+                    // }
+                    // finalBlock;
+                    BasicBlock basicBlock = curBlock;
+                    BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = trueBlock;
+                    visitStmt(stmtNode.getStmtNodes().get(0));
+                    BasicBlock trueEndBlock = curBlock;
+                    BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
+                    curTrueBlock = trueBlock;
+                    curFalseBlock = finalBlock;
+                    curBlock = basicBlock;
+                    visitCond(stmtNode.getCondNode());
+                    buildFactory.buildBr(trueEndBlock, finalBlock);
+                    curBlock = finalBlock;
+                } else {
+                    // basicBlock;
+                    // if (...) {
+                    //    trueBlock;
+                    //    ...
+                    //    trueEndBlock;
+                    // } else {
+                    //    falseBlock;
+                    //    ...
+                    //    falseEndBlock;
+                    // }
+                    // finalBlock;
+                    BasicBlock basicBlock = curBlock;
+                    BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = trueBlock;
+                    visitStmt(stmtNode.getStmtNodes().get(0));
+                    BasicBlock trueEndBlock = curBlock;
+                    BasicBlock falseBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = falseBlock;
+                    visitStmt(stmtNode.getStmtNodes().get(1));
+                    BasicBlock falseEndBlock = curBlock;
+                    BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = basicBlock;
+                    curTrueBlock = trueBlock;
+                    curFalseBlock = falseBlock;
+                    visitCond(stmtNode.getCondNode());
+                    buildFactory.buildBr(trueEndBlock, finalBlock);
+                    buildFactory.buildBr(falseEndBlock, finalBlock);
+                    curBlock = finalBlock;
+                }
             default:
                 // todo
                 break;
@@ -439,7 +492,6 @@ public class LLVMGenerator {
             if (lValNode.getExpNodes().isEmpty()) {
                 // is not array, maybe x
                 Value addr = getValue(lValNode.getIdent().getContent());
-                System.out.println("name: " + lValNode.getIdent().getContent() + "; value: " + addr);
                 tmpValue = addr;
                 Type type = addr.getType();
 
@@ -584,7 +636,10 @@ public class LLVMGenerator {
                     MulExpNode mulExpNode = addExpNode.getMulExpNode();
                     AddExpNode now = addExpNode;
                     AddExpNode next = addExpNode.getAddExpNode();
-                    while (next != null && next.getMulExpNode() != null && Objects.equals(mulExpNode.getStr(), next.getMulExpNode().getStr()) && next.getOperator().getType() == TokenType.PLUS) {
+                    while (next != null &&
+                            next.getMulExpNode() != null &&
+                            Objects.equals(mulExpNode.getStr(), next.getMulExpNode().getStr()) &&
+                            now.getOperator().getType() == TokenType.PLUS) {
                         times++;
                         now = next;
                         next = next.getAddExpNode();
@@ -614,22 +669,81 @@ public class LLVMGenerator {
 
     private void visitRelExp(RelExpNode relExpNode) {
         // RelExp -> AddExp | AddExp ('<' | '>' | '<=' | '>=') RelExp
-        // todo
+        Value value = tmpValue;
+        Operator op = tmpOp;
+        tmpValue = null;
+        visitAddExp(relExpNode.getAddExpNode());
+        if (value != null) {
+            tmpValue = buildFactory.buildBinary(curBlock, op, value, tmpValue);
+        }
+        if (relExpNode.getRelExpNode() != null) {
+            if (relExpNode.getOperator().getType() == TokenType.LSS) {
+                tmpOp = Operator.Lt;
+            } else if (relExpNode.getOperator().getType() == TokenType.LEQ) {
+                tmpOp = Operator.Le;
+            } else if (relExpNode.getOperator().getType() == TokenType.GRE) {
+                tmpOp = Operator.Gt;
+            } else {
+                tmpOp = Operator.Ge;
+            }
+            visitRelExp(relExpNode.getRelExpNode());
+        }
     }
 
     private void visitEqExp(EqExpNode eqExpNode) {
         // EqExp -> RelExp | RelExp ('==' | '!=') EqExp
-        // todo
+        Value value = tmpValue;
+        Operator op = tmpOp;
+        tmpValue = null;
+        visitRelExp(eqExpNode.getRelExpNode());
+        if (value != null) {
+            tmpValue = buildFactory.buildBinary(curBlock, op, value, tmpValue);
+        }
+        if (eqExpNode.getEqExpNode() != null) {
+            tmpOp = eqExpNode.getOperator().getType() == TokenType.EQL ? Operator.Eq : Operator.Ne;
+            visitEqExp(eqExpNode.getEqExpNode());
+        }
     }
 
     private void visitLAndExp(LAndExpNode lAndExpNode) {
         // LAndExp -> EqExp | EqExp '&&' LAndExp
-        // todo
+        BasicBlock trueBlock = curTrueBlock;
+        BasicBlock falseBlock = curFalseBlock;
+        BasicBlock tmpTrueBlock = curTrueBlock;
+        BasicBlock thenBlock = null;
+        if (lAndExpNode.getLAndExpNode() != null) {
+            thenBlock = buildFactory.buildBasicBlock(curFunction);
+            tmpTrueBlock = thenBlock;
+        }
+        curTrueBlock = tmpTrueBlock;
+        tmpValue = null;
+        visitEqExp(lAndExpNode.getEqExpNode());
+        buildFactory.buildBr(curBlock, tmpValue, curTrueBlock, curFalseBlock);
+        curTrueBlock = trueBlock;
+        curFalseBlock = falseBlock;
+        if (lAndExpNode.getLAndExpNode() != null) {
+            curBlock = thenBlock;
+            visitLAndExp(lAndExpNode.getLAndExpNode());
+        }
     }
 
     private void visitLOrExp(LOrExpNode lOrExpNode) {
         // LOrExp -> LAndExp | LAndExp '||' LOrExp
-        // todo
+        BasicBlock trueBlock = curTrueBlock;
+        BasicBlock falseBlock = curFalseBlock;
+        BasicBlock thenBlock = null;
+        if (lOrExpNode.getLOrExpNode() != null) {
+            thenBlock = buildFactory.buildBasicBlock(curFunction);
+            falseBlock = thenBlock;
+        }
+        curFalseBlock = falseBlock;
+        visitLAndExp(lOrExpNode.getLAndExpNode());
+        curTrueBlock = trueBlock;
+        curFalseBlock = falseBlock;
+        if (lOrExpNode.getLOrExpNode() != null) {
+            curBlock = thenBlock;
+            visitLOrExp(lOrExpNode.getLOrExpNode());
+        }
     }
 
     private void visitConstExp(ConstExpNode constExpNode) {

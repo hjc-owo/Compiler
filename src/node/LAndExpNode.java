@@ -27,7 +27,7 @@ public class LAndExpNode {
         return andToken;
     }
 
-    public LAndExpNode getlAndExpNode() {
+    public LAndExpNode getLAndExpNode() {
         return lAndExpNode;
     }
 

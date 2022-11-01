@@ -50,7 +50,7 @@ public class IRModule {
                     if (basicBlock.getValue().getInstructions().isEmpty()) {
                         BuildFactory.getInstance().checkBlockEnd(basicBlock.getValue());
                     }
-                    basicBlock.getValue().setName(";<label>:" + Value.REG_NUMBER++);
+                    basicBlock.getValue().setName(String.valueOf(Value.REG_NUMBER++));
                     basicBlock.getValue().refreshReg();
                 }
             }
@@ -74,8 +74,9 @@ public class IRModule {
                     if (basicBlock != function.getValue().getList().getBegin()) {
                         s.append("\n");
                     }
-                    s.append(basicBlock.getValue().getName()).append(":\n").append(basicBlock.getValue().toString()).append("}\n\n");
+                    s.append(";<label>:").append(basicBlock.getValue().getName()).append(":\n").append(basicBlock.getValue().toString());
                 }
+                s.append("}\n\n");
             }
         }
         return s.toString();

@@ -21,7 +21,7 @@ public class BasicBlock extends Value {
     private List<BasicBlock> successors; // 这个 BasicBlock 的后继 BasicBlock
 
     public BasicBlock(Function function) {
-        super(";<label>:" + REG_NUMBER++, new LabelType());
+        super(String.valueOf(REG_NUMBER++), new LabelType());
         this.instructions = new IList<>(this);
         this.node = new INode<>(this);
         this.predecessors = new ArrayList<>();
