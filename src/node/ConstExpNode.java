@@ -21,8 +21,4 @@ public class ConstExpNode {
         addExpNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.ConstExp));
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        addExpNode.fillSymbolTable(currentSymbolTable);
-    }
 }

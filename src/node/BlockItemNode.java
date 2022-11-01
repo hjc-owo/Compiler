@@ -27,12 +27,4 @@ public class BlockItemNode {
             stmtNode.print();
         }
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        if (declNode != null) {
-            declNode.fillSymbolTable(currentSymbolTable);
-        } else {
-            stmtNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

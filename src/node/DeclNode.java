@@ -27,12 +27,4 @@ public class DeclNode {
             varDecl.print();
         }
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        if (constDecl != null) {
-            constDecl.fillSymbolTable(currentSymbolTable);
-        } else {
-            varDecl.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

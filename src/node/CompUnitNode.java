@@ -41,14 +41,4 @@ public class CompUnitNode {
         mainFuncDefNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.CompUnit));
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (DeclNode declNode : declNodes) {
-            declNode.fillSymbolTable(currentSymbolTable);
-        }
-        for (FuncDefNode funcDefNode : funcDefNodes) {
-            funcDefNode.fillSymbolTable(currentSymbolTable);
-        }
-        mainFuncDefNode.fillSymbolTable(currentSymbolTable);
-    }
 }

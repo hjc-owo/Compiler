@@ -39,11 +39,4 @@ public class LAndExpNode {
             lAndExpNode.print();
         }
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        eqExpNode.fillSymbolTable(currentSymbolTable);
-        if (lAndExpNode != null) {
-            lAndExpNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

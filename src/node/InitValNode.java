@@ -48,14 +48,4 @@ public class InitValNode {
         }
         IOUtils.write(Parser.nodeType.get(NodeType.InitVal));
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        if (expNode != null) {
-            expNode.fillSymbolTable(currentSymbolTable);
-        } else {
-            for (InitValNode initValNode : initValNodes) {
-                initValNode.fillSymbolTable(currentSymbolTable);
-            }
-        }
-    }
 }

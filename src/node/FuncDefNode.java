@@ -58,20 +58,4 @@ public class FuncDefNode {
         blockNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.FuncDef));
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        if (currentSymbolTable.containsInCurrent(ident.getContent())) {
-            ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.b));
-        }
-        if (funcFParamsNode == null) {
-            currentSymbolTable.put(ident.getContent(), new FuncSymbol(ident.getContent(), funcTypeNode.getType(), new ArrayList<>()));
-        } else {
-            currentSymbolTable.put(ident.getContent(), new FuncSymbol(ident.getContent(), funcTypeNode.getType(), funcFParamsNode.getParams()));
-        }
-        currentSymbolTable = new FuncSymbolTable(currentSymbolTable, funcTypeNode.getType());
-        if (funcFParamsNode != null) {
-            funcFParamsNode.fillSymbolTable(currentSymbolTable);
-        }
-        blockNode.fillSymbolTable(currentSymbolTable);
-    }
 }

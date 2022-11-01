@@ -17,8 +17,6 @@ public class Parser {
     private List<Token> tokens;
     private int index = 0;
     private CompUnitNode compUnitNode;
-    private SymbolTable symbolTable = new SymbolTable();
-    private SymbolTable currentSymbolTable = symbolTable;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -66,10 +64,6 @@ public class Parser {
         put(NodeType.LOrExp, "<LOrExp>\n");
         put(NodeType.ConstExp, "<ConstExp>\n");
     }};
-
-    public void fillSymbolTable() {
-        this.compUnitNode.fillSymbolTable(currentSymbolTable);
-    }
 
     public enum StmtType {
         LValAssignExp, Exp, Block, If, While, Break, Continue, Return, LValAssignGetint, Printf

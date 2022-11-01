@@ -41,20 +41,4 @@ public class SymbolTable {
     public void put(String ident, Symbol symbol) {
         symbols.put(ident, symbol);
     }
-
-    public void print() {
-        System.out.println("SymbolTable: ");
-        for (String ident : symbols.keySet()) {
-            if (symbols.get(ident) instanceof ArraySymbol) {
-                ArraySymbol arraySymbol = (ArraySymbol) symbols.get(ident);
-                System.out.println("Array: " + ident + " " + arraySymbol.getDimension() + " " + arraySymbol.getDimLengths());
-            } else if (symbols.get(ident) instanceof FuncSymbol) {
-                FuncSymbol funcSymbol = (FuncSymbol) symbols.get(ident);
-                System.out.println("Func: " + ident + " " + funcSymbol.getType() + " ");
-                for (FuncParam funcParam : funcSymbol.getFuncParams()) {
-                    System.out.println(funcParam.toString());
-                }
-            }
-        }
-    }
 }

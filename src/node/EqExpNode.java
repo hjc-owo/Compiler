@@ -37,11 +37,4 @@ public class EqExpNode {
             eqExpNode.print();
         }
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        relExpNode.fillSymbolTable(currentSymbolTable);
-        if (eqExpNode != null) {
-            eqExpNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

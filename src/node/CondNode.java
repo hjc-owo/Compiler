@@ -21,8 +21,4 @@ public class CondNode {
         lOrExpNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.Cond));
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        lOrExpNode.fillSymbolTable(currentSymbolTable);
-    }
 }

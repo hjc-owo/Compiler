@@ -68,20 +68,4 @@ public class FuncFParamNode {
     public FuncParam getParam() {
         return new FuncParam(ident.getContent(), leftBrackets.size());
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        if (currentSymbolTable.containsInCurrent(ident.getContent())) {
-            ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.b));
-        }
-        int dimension = leftBrackets.size();
-        if (dimension == 0) {
-            currentSymbolTable.put(ident.getContent(), new ArraySymbol(ident.getContent(), false, 0, new ArrayList<>()));
-        } else {
-            List<Integer> dimLengths = new ArrayList<>();
-            for (ConstExpNode ignored : constExpNodes) {
-                dimLengths.add(1);
-            }
-            currentSymbolTable.put(ident.getContent(), new ArraySymbol(ident.getContent(), false, dimension, dimLengths));
-        }
-    }
 }

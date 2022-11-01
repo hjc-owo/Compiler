@@ -23,10 +23,6 @@ public class ExpNode {
         IOUtils.write(Parser.nodeType.get(NodeType.Exp));
     }
 
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        addExpNode.fillSymbolTable(currentSymbolTable);
-    }
-
     public FuncParam getFuncParam() {
         return addExpNode.getFuncParam();
     }

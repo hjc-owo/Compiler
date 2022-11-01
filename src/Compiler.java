@@ -1,8 +1,8 @@
 import error.ErrorHandler;
 import frontend.Lexer;
 import frontend.Parser;
-import ir.IRModule;
-import ir.LLVMGenerator;
+//import ir.IRModule;
+//import ir.LLVMGenerator;
 import token.Token;
 import utils.IOUtils;
 
@@ -37,16 +37,16 @@ public class Compiler {
             parser.printParseAns();
         }
 
-        parser.fillSymbolTable(); // 错误处理的符号表系统
-
-        LLVMGenerator generator = new LLVMGenerator();
-        generator.visitCompUnit(parser.getCompUnitNode());
-        if (stage == 3) {
-            IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");
-        }
-
+        ErrorHandler errorHandler = new ErrorHandler();
+        errorHandler.compUnitError(parser.getCompUnitNode());
         if (error) {
             ErrorHandler.printErrors();
         }
+
+//        LLVMGenerator generator = new LLVMGenerator();
+//        generator.visitCompUnit(parser.getCompUnitNode());
+//        if (stage == 3) {
+//            IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");
+//        }
     }
 }

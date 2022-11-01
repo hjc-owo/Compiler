@@ -40,10 +40,4 @@ public class FuncFParamsNode {
         }
         return params;
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (FuncFParamNode funcFParamNode : funcFParamNodes) {
-            funcFParamNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

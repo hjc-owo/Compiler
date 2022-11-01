@@ -40,11 +40,4 @@ public class RelExpNode {
             relExpNode.print();
         }
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        addExpNode.fillSymbolTable(currentSymbolTable);
-        if (relExpNode != null) {
-            relExpNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

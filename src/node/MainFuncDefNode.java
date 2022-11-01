@@ -36,10 +36,4 @@ public class MainFuncDefNode {
         blockNode.print();
         IOUtils.write(Parser.nodeType.get(NodeType.MainFuncDef));
     }
-
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        currentSymbolTable = new FuncSymbolTable(currentSymbolTable, FuncType.INT);
-        blockNode.fillSymbolTable(currentSymbolTable);
-    }
 }

@@ -39,11 +39,4 @@ public class LOrExpNode {
             lOrExpNode.print();
         }
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        lAndExpNode.fillSymbolTable(currentSymbolTable);
-        if (lOrExpNode != null) {
-            lOrExpNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

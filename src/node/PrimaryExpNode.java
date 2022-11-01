@@ -62,14 +62,6 @@ public class PrimaryExpNode {
         IOUtils.write(Parser.nodeType.get(NodeType.PrimaryExp));
     }
 
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        if (expNode != null) {
-            expNode.fillSymbolTable(currentSymbolTable);
-        } else if (lValNode != null) {
-            lValNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
-
     public FuncParam getFuncParam() {
         if (expNode != null) {
             return expNode.getFuncParam();

@@ -35,10 +35,4 @@ public class VarDeclNode {
         IOUtils.write(semicn.toString());
         IOUtils.write(Parser.nodeType.get(NodeType.VarDecl));
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (VarDefNode varDefNode : varDefNodes) {
-            varDefNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

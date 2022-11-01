@@ -43,13 +43,6 @@ public class MulExpNode {
         }
     }
 
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        unaryExpNode.fillSymbolTable(currentSymbolTable);
-        if (mulExpNode != null) {
-            mulExpNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
-
     public FuncParam getFuncParam() {
         return unaryExpNode.getFuncParam();
     }

@@ -54,10 +54,4 @@ public class ConstDeclNode {
         IOUtils.write(semicnToken.toString());
         IOUtils.write(Parser.nodeType.get(NodeType.ConstDecl));
     }
-
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        for (ConstDefNode constDefNode : constDefNodes) {
-            constDefNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
 }

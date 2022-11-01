@@ -43,15 +43,6 @@ public class LValNode {
         IOUtils.write(Parser.nodeType.get(NodeType.LVal));
     }
 
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        if (!currentSymbolTable.contains(ident.getContent())) {
-            ErrorHandler.addError(new Error(ident.getLineNumber(), ErrorType.c));
-        }
-        for (ExpNode expNode : expNodes) {
-            expNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
-
     public FuncParam getFuncParam() {
         return new FuncParam(ident.getContent(), expNodes.size());
     }

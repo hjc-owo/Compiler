@@ -39,13 +39,6 @@ public class AddExpNode {
         }
     }
 
-    public void fillSymbolTable(SymbolTable currentSymbolTable) {
-        mulExpNode.fillSymbolTable(currentSymbolTable);
-        if (addExpNode != null) {
-            addExpNode.fillSymbolTable(currentSymbolTable);
-        }
-    }
-
     public FuncParam getFuncParam() {
         return mulExpNode.getFuncParam();
     }
