@@ -1,6 +1,8 @@
 import error.ErrorHandler;
 import frontend.Lexer;
 import frontend.Parser;
+import ir.IRModule;
+import ir.LLVMGenerator;
 import token.Token;
 import utils.IOUtils;
 
@@ -12,12 +14,7 @@ public class Compiler {
     private static List<Token> tokens = new ArrayList<>();
     public static final int stage = 3;
 
-    public static int getStage() {
-        return stage;
-    }
-
     public static void main(String[] args) throws IOException {
-        final boolean error = true;
         IOUtils.delete("output.txt");
         IOUtils.delete("error.txt");
         IOUtils.delete("llvm_ir.txt");
@@ -37,14 +34,15 @@ public class Compiler {
 
         ErrorHandler errorHandler = new ErrorHandler();
         errorHandler.compUnitError(parser.getCompUnitNode());
-        if (error) {
-            ErrorHandler.printErrors();
+        if (!errorHandler.getErrors().isEmpty()) {
+            errorHandler.printErrors();
+            return;
         }
 
-//        LLVMGenerator generator = new LLVMGenerator();
-//        generator.visitCompUnit(parser.getCompUnitNode());
-//        if (stage == 3) {
-//            IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");
-//        }
+        LLVMGenerator generator = new LLVMGenerator();
+        generator.visitCompUnit(parser.getCompUnitNode());
+        if (stage == 3) {
+            IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");
+        }
     }
 }

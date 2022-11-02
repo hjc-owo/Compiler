@@ -17,7 +17,11 @@ public class ErrorHandler {
     private SymbolTable symbolTable = new SymbolTable();
     private SymbolTable currentSymbolTable = symbolTable;
 
-    public static void printErrors() {
+    public List<Error> getErrors() {
+        return errors;
+    }
+
+    public void printErrors() {
         errors.sort(Error::compareTo);
         for (Error error : errors) {
             IOUtils.error(error.toString());
