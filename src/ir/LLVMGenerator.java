@@ -458,6 +458,7 @@ public class LLVMGenerator {
                     buildFactory.buildBr(falseEndBlock, finalBlock);
                     curBlock = finalBlock;
                 }
+                break;
             default:
                 // todo
                 break;
@@ -677,14 +678,21 @@ public class LLVMGenerator {
             tmpValue = buildFactory.buildBinary(curBlock, op, value, tmpValue);
         }
         if (relExpNode.getRelExpNode() != null) {
-            if (relExpNode.getOperator().getType() == TokenType.LSS) {
-                tmpOp = Operator.Lt;
-            } else if (relExpNode.getOperator().getType() == TokenType.LEQ) {
-                tmpOp = Operator.Le;
-            } else if (relExpNode.getOperator().getType() == TokenType.GRE) {
-                tmpOp = Operator.Gt;
-            } else {
-                tmpOp = Operator.Ge;
+            switch (relExpNode.getOperator().getType()) {
+                case LSS:
+                    tmpOp = Operator.Lt;
+                    break;
+                case LEQ:
+                    tmpOp = Operator.Le;
+                    break;
+                case GRE:
+                    tmpOp = Operator.Gt;
+                    break;
+                case GEQ:
+                    tmpOp = Operator.Ge;
+                    break;
+                default:
+                    throw new RuntimeException("Unknown operator");
             }
             visitRelExp(relExpNode.getRelExpNode());
         }
@@ -731,12 +739,13 @@ public class LLVMGenerator {
         // LOrExp -> LAndExp | LAndExp '||' LOrExp
         BasicBlock trueBlock = curTrueBlock;
         BasicBlock falseBlock = curFalseBlock;
+        BasicBlock tmpFalseBlock = curFalseBlock;
         BasicBlock thenBlock = null;
         if (lOrExpNode.getLOrExpNode() != null) {
             thenBlock = buildFactory.buildBasicBlock(curFunction);
-            falseBlock = thenBlock;
+            tmpFalseBlock = thenBlock;
         }
-        curFalseBlock = falseBlock;
+        curFalseBlock = tmpFalseBlock;
         visitLAndExp(lOrExpNode.getLAndExpNode());
         curTrueBlock = trueBlock;
         curFalseBlock = falseBlock;

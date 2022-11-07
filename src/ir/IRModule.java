@@ -63,7 +63,9 @@ public class IRModule {
         for (GlobalVar globalVar : globalVars) {
             s.append(globalVar.toString()).append("\n");
         }
-        s.append("\n");
+        if (!globalVars.isEmpty()) {
+            s.append("\n");
+        }
         refreshRegNumber();
         for (INode<Function, IRModule> function : functions) {
             if (function.getValue().isLibraryFunction()) {
