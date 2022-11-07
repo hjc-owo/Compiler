@@ -383,21 +383,22 @@ public class LLVMGenerator {
                 }
                 break;
             case Printf:
-                String[] formatStrings = stmtNode.getFormatString().getContent().replace("\\n", "\n").replace("\"", "").split("%d");
+                String formatStrings = stmtNode.getFormatString().getContent().replace("\\n", "\n").replace("\"", "");
                 List<Value> args = new ArrayList<>();
                 for (ExpNode expNode : stmtNode.getExpNodes()) {
                     visitExp(expNode);
                     args.add(tmpValue);
                 }
-                for (String formatString : formatStrings) {
-                    for (char c : formatString.toCharArray()) {
-                        buildFactory.buildCall(curBlock, (Function) getValue("putch"), new ArrayList<Value>() {{
-                            add(new ConstInt(c));
-                        }});
-                    }
-                    if (!args.isEmpty()) {
+                for (int i = 0; i < formatStrings.length(); i++) {
+                    if (formatStrings.charAt(i) == '%') {
                         buildFactory.buildCall(curBlock, (Function) getValue("putint"), new ArrayList<Value>() {{
                             add(args.remove(0));
+                        }});
+                        i++;
+                    } else {
+                        int finalI = i;
+                        buildFactory.buildCall(curBlock, (Function) getValue("putch"), new ArrayList<Value>() {{
+                            add(new ConstInt(formatStrings.charAt(finalI)));
                         }});
                     }
                 }
@@ -584,12 +585,18 @@ public class LLVMGenerator {
                 saveValue = calculate(op, value, saveValue);
             }
             if (mulExpNode.getMulExpNode() != null) {
-                if (mulExpNode.getOperator().getType() == TokenType.MULT) {
-                    saveOp = Operator.Mul;
-                } else if (mulExpNode.getOperator().getType() == TokenType.DIV) {
-                    saveOp = Operator.Div;
-                } else {
-                    saveOp = Operator.Mod;
+                switch (mulExpNode.getOperator().getType()) {
+                    case MULT:
+                        saveOp = Operator.Mul;
+                        break;
+                    case DIV:
+                        saveOp = Operator.Div;
+                        break;
+                    case MOD:
+                        saveOp = Operator.Mod;
+                        break;
+                    default:
+                        throw new RuntimeException("unknown operator");
                 }
                 visitMulExp(mulExpNode.getMulExpNode());
             }
