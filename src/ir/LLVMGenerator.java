@@ -14,6 +14,8 @@ public class LLVMGenerator {
     private BasicBlock curBlock = null;
     private BasicBlock curTrueBlock = null;
     private BasicBlock curFalseBlock = null;
+    private BasicBlock continueBlock = null;
+    private BasicBlock curWhileFinalBlock = null;
     private Function curFunction = null;
 
     /**
@@ -354,16 +356,6 @@ public class LLVMGenerator {
         //	| LVal '=' 'getint' '(' ')' ';'
         //	| 'printf' '(' FormatString { ',' Exp } ')' ';'
         switch (stmtNode.getType()) {
-            case Exp:
-                if (stmtNode.getExpNode() != null) {
-                    visitExp(stmtNode.getExpNode());
-                }
-                break;
-            case Block:
-                addSymbolAndConstTable();
-                visitBlock(stmtNode.getBlockNode());
-                removeSymbolAndConstTable();
-                break;
             case LValAssignExp:
                 if (stmtNode.getLValNode().getExpNodes().isEmpty()) {
                     // is not array
@@ -374,6 +366,111 @@ public class LLVMGenerator {
                     // todo: is array
                 }
                 break;
+            case Exp:
+                if (stmtNode.getExpNode() != null) {
+                    visitExp(stmtNode.getExpNode());
+                }
+                break;
+            case Block:
+                addSymbolAndConstTable();
+                visitBlock(stmtNode.getBlockNode());
+                removeSymbolAndConstTable();
+                break;
+            case If:
+                if (stmtNode.getElseToken() == null) {
+                    // basicBlock;
+                    // if (...) {
+                    //    trueBlock;
+                    // }
+                    // finalBlock;
+                    BasicBlock basicBlock = curBlock;
+
+                    BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = trueBlock;
+                    visitStmt(stmtNode.getStmtNodes().get(0));
+                    BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
+                    buildFactory.buildBr(curBlock, finalBlock);
+
+                    curTrueBlock = trueBlock;
+                    curFalseBlock = finalBlock;
+                    curBlock = basicBlock;
+                    visitCond(stmtNode.getCondNode());
+
+                    curBlock = finalBlock;
+                } else {
+                    // basicBlock;
+                    // if (...) {
+                    //    trueBlock;
+                    //    ...
+                    //    trueEndBlock;
+                    // } else {
+                    //    falseBlock;
+                    //    ...
+                    //    falseEndBlock;
+                    // }
+                    // finalBlock;
+                    BasicBlock basicBlock = curBlock;
+
+                    BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = trueBlock;
+                    visitStmt(stmtNode.getStmtNodes().get(0));
+                    BasicBlock trueEndBlock = curBlock;
+
+                    BasicBlock falseBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = falseBlock;
+                    visitStmt(stmtNode.getStmtNodes().get(1));
+                    BasicBlock falseEndBlock = curBlock;
+
+                    curBlock = basicBlock;
+                    curTrueBlock = trueBlock;
+                    curFalseBlock = falseBlock;
+                    visitCond(stmtNode.getCondNode());
+
+                    BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
+                    buildFactory.buildBr(trueEndBlock, finalBlock);
+                    buildFactory.buildBr(falseEndBlock, finalBlock);
+                    curBlock = finalBlock;
+                }
+                break;
+            case While:
+                // basicBlock;
+                // while (judgeBlock) {
+                //    whileBlock;
+                // }
+                // whileFinalBlock;
+                BasicBlock basicBlock = curBlock;
+                BasicBlock tmpContinueBlock = continueBlock;
+                BasicBlock tmpWhileFinalBlock = curWhileFinalBlock;
+
+                BasicBlock judgeBlock = buildFactory.buildBasicBlock(curFunction);
+                buildFactory.buildBr(basicBlock, judgeBlock);
+
+                BasicBlock whileBlock = buildFactory.buildBasicBlock(curFunction);
+                curBlock = whileBlock;
+                continueBlock = judgeBlock;
+
+                BasicBlock whileFinalBlock = buildFactory.buildBasicBlock(curFunction);
+                curWhileFinalBlock = whileFinalBlock;
+
+                visitStmt(stmtNode.getStmtNodes().get(0));
+                buildFactory.buildBr(curBlock, judgeBlock);
+
+                continueBlock = tmpContinueBlock;
+                curWhileFinalBlock = tmpWhileFinalBlock;
+
+                curTrueBlock = whileBlock;
+                curFalseBlock = whileFinalBlock;
+                curBlock = judgeBlock;
+                visitCond(stmtNode.getCondNode());
+
+                curBlock = whileFinalBlock;
+                break;
+            case Break:
+                buildFactory.buildBr(curBlock, curWhileFinalBlock);
+                break;
+            case Continue:
+                buildFactory.buildBr(curBlock, continueBlock);
+                break;
             case Return:
                 if (stmtNode.getExpNode() == null) {
                     buildFactory.buildRet(curBlock);
@@ -381,6 +478,11 @@ public class LLVMGenerator {
                     visitExp(stmtNode.getExpNode());
                     buildFactory.buildRet(curBlock, tmpValue);
                 }
+                break;
+            case LValAssignGetint:
+                Value input = getValue(stmtNode.getLValNode().getIdent().getContent());
+                tmpValue = buildFactory.buildCall(curBlock, (Function) getValue("getint"), new ArrayList<>());
+                buildFactory.buildStore(curBlock, input, tmpValue);
                 break;
             case Printf:
                 String formatStrings = stmtNode.getFormatString().getContent().replace("\\n", "\n").replace("\"", "");
@@ -403,66 +505,8 @@ public class LLVMGenerator {
                     }
                 }
                 break;
-            case LValAssignGetint:
-                Value input = getValue(stmtNode.getLValNode().getIdent().getContent());
-                tmpValue = buildFactory.buildCall(curBlock, (Function) getValue("getint"), new ArrayList<>());
-                buildFactory.buildStore(curBlock, input, tmpValue);
-                break;
-            case If:
-                if (stmtNode.getElseToken() == null) {
-                    // basicBlock;
-                    // if (...) {
-                    //    trueBlock;
-                    //    ...
-                    //    trueEndBlock;
-                    // }
-                    // finalBlock;
-                    BasicBlock basicBlock = curBlock;
-                    BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
-                    curBlock = trueBlock;
-                    visitStmt(stmtNode.getStmtNodes().get(0));
-                    BasicBlock trueEndBlock = curBlock;
-                    BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
-                    curTrueBlock = trueBlock;
-                    curFalseBlock = finalBlock;
-                    curBlock = basicBlock;
-                    visitCond(stmtNode.getCondNode());
-                    buildFactory.buildBr(trueEndBlock, finalBlock);
-                    curBlock = finalBlock;
-                } else {
-                    // basicBlock;
-                    // if (...) {
-                    //    trueBlock;
-                    //    ...
-                    //    trueEndBlock;
-                    // } else {
-                    //    falseBlock;
-                    //    ...
-                    //    falseEndBlock;
-                    // }
-                    // finalBlock;
-                    BasicBlock basicBlock = curBlock;
-                    BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
-                    curBlock = trueBlock;
-                    visitStmt(stmtNode.getStmtNodes().get(0));
-                    BasicBlock trueEndBlock = curBlock;
-                    BasicBlock falseBlock = buildFactory.buildBasicBlock(curFunction);
-                    curBlock = falseBlock;
-                    visitStmt(stmtNode.getStmtNodes().get(1));
-                    BasicBlock falseEndBlock = curBlock;
-                    BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
-                    curBlock = basicBlock;
-                    curTrueBlock = trueBlock;
-                    curFalseBlock = falseBlock;
-                    visitCond(stmtNode.getCondNode());
-                    buildFactory.buildBr(trueEndBlock, finalBlock);
-                    buildFactory.buildBr(falseEndBlock, finalBlock);
-                    curBlock = finalBlock;
-                }
-                break;
             default:
-                // todo
-                break;
+                throw new RuntimeException("Unknown StmtNode type: " + stmtNode.getType());
         }
     }
 

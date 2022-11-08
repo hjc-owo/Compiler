@@ -385,6 +385,8 @@ public class ErrorHandler {
                         }
                     }
                     if (!Objects.equals(funcFParamDimensions, funcRParamDimensions)) {
+                        System.out.println(funcFParamDimensions);
+                        System.out.println(funcRParamDimensions);
                         ErrorHandler.addError(new Error(unaryExpNode.getIdent().getLineNumber(), ErrorType.e));
                     }
                 }
@@ -400,7 +402,7 @@ public class ErrorHandler {
         if (unaryExpNode.getPrimaryExpNode() != null) {
             return getFuncParamInPrimaryExp(unaryExpNode.getPrimaryExpNode());
         } else if (unaryExpNode.getIdent() != null) {
-            return null;
+            return currentSymbolTable.get(unaryExpNode.getIdent().getContent()) instanceof FuncSymbol ? new FuncParam(unaryExpNode.getIdent().getContent(), 0) : null;
         } else {
             return getFuncParamInUnaryExp(unaryExpNode.getUnaryExpNode());
         }
