@@ -623,7 +623,6 @@ public class Parser {
             ErrorHandler.addError(new Error(tokens.get(index - 1).getLineNumber(), ErrorType.k));
             return new Token(TokenType.RBRACK, tokens.get(index - 1).getLineNumber(), "]");
         } else {
-            System.out.println("Syntax error at line " + tokens.get(index).getLineNumber() + ": " + tokens.get(index).getContent());
             throw new RuntimeException("Syntax error at line " + tokens.get(index).getLineNumber() + ": " + tokens.get(index).getContent() + " is not " + tokenType);
         }
     }

@@ -385,8 +385,6 @@ public class ErrorHandler {
                         }
                     }
                     if (!Objects.equals(funcFParamDimensions, funcRParamDimensions)) {
-                        System.out.println(funcFParamDimensions);
-                        System.out.println(funcRParamDimensions);
                         ErrorHandler.addError(new Error(unaryExpNode.getIdent().getLineNumber(), ErrorType.e));
                     }
                 }

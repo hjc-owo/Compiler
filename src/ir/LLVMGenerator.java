@@ -36,6 +36,15 @@ public class LLVMGenerator {
     private boolean isArray = false;
     private boolean isRegister = false;
 
+    /**
+     * 数组相关
+     */
+    private Value curArray = null;
+    private String tmpName = null;
+    private int tmpDepth = 0;
+    private int tmpOffset = 0;
+    private List<Integer> tmpDims = null;
+
 
     /**
      * 新符号表系统
@@ -162,7 +171,7 @@ public class LLVMGenerator {
         // ConstDef -> Ident { '[' ConstExp ']' } '=' ConstInitVal
         String name = constDefNode.getIdent().getContent();
         if (constDefNode.getConstExpNodes().isEmpty()) {
-            // is not array
+            // is not an array
             visitConstInitVal(constDefNode.getConstInitValNode());
             tmpValue = buildFactory.getConstInt(saveValue == null ? 0 : saveValue);
             addConst(name, saveValue);
@@ -174,17 +183,75 @@ public class LLVMGenerator {
                 addSymbol(name, tmpValue);
             }
         } else {
-            // todo: is array
+            // is an array
+            List<Integer> dims = new ArrayList<>();
+            for (ConstExpNode constExpNode : constDefNode.getConstExpNodes()) {
+                visitConstExp(constExpNode);
+                dims.add(saveValue);
+            }
+            tmpDims = new ArrayList<>(dims);
+            Type type = null;
+            for (int i = dims.size() - 1; i >= 0; i--) {
+                if (type == null) {
+                    type = buildFactory.getArrayType(tmpType, dims.get(i));
+                } else {
+                    type = buildFactory.getArrayType(type, dims.get(i));
+                }
+            }
+            if (isGlobal) {
+                tmpValue = buildFactory.buildGlobalArray(name, type, true);
+            } else {
+                tmpValue = buildFactory.buildArray(curBlock, true, type);
+            }
+            addSymbol(name, tmpValue);
+            curArray = tmpValue;
+            isArray = true;
+            tmpName = name;
+            tmpDepth = 0;
+            tmpOffset = 0;
+            visitConstInitVal(constDefNode.getConstInitValNode());
+            isArray = false;
         }
     }
 
     private void visitConstInitVal(ConstInitValNode constInitValNode) {
         // ConstInitVal -> ConstExp | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
         if (constInitValNode.getConstExpNode() != null && !isArray) {
-            // is not array
+            // is not an array
             visitConstExp(constInitValNode.getConstExpNode());
         } else {
-            // todo: is array
+            // '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
+            if (constInitValNode.getConstExpNode() != null) {
+                tmpValue = null;
+                visitConstExp(constInitValNode.getConstExpNode());
+                tmpDepth = 1;
+                tmpValue = buildFactory.getConstInt(saveValue);
+                if (isGlobal) {
+                    buildFactory.buildInitArray(curArray, tmpOffset, tmpValue);
+                } else {
+                    buildFactory.buildStore(curBlock, tmpValue, buildFactory.buildGEP(curBlock, curArray, tmpOffset));
+                }
+                StringBuilder name = new StringBuilder(tmpName);
+                List<Value> args = ((ArrayType) ((PointerType) curArray.getType()).getTargetType()).offset2Index(tmpOffset);
+                for (Value v : args) {
+                    name.append(((ConstInt) v).getValue()).append(";");
+                }
+                addConst(name.toString(), saveValue);
+                tmpOffset++;
+            } else if (!constInitValNode.getConstInitValNodes().isEmpty()) {
+                int depth = 0, offset = tmpOffset;
+                for (ConstInitValNode constInitValNode1 : constInitValNode.getConstInitValNodes()) {
+                    visitConstInitVal(constInitValNode1);
+                    depth = Math.max(depth, tmpDepth);
+                }
+                depth++;
+                int size = 1;
+                for (int i = 1; i < depth; i++) {
+                    size *= tmpDims.get(tmpDims.size() - i);
+                }
+                tmpOffset = Math.max(tmpOffset, offset + size);
+                tmpDepth = depth;
+            }
         }
     }
 
@@ -200,7 +267,7 @@ public class LLVMGenerator {
         // VarDef -> Ident { '[' ConstExp ']' } [ '=' InitVal ]
         String name = varDefNode.getIdent().getContent();
         if (varDefNode.getConstExpNodes().isEmpty()) {
-            // is not array
+            // is not an array
             if (varDefNode.getInitValNode() != null) {
                 tmpValue = null;
                 if (isGlobal) {
@@ -223,7 +290,8 @@ public class LLVMGenerator {
                 addSymbol(name, tmpValue);
             }
         } else {
-            // todo: is array
+            // todo: is an array
+            isConst = true;
         }
     }
 
@@ -358,12 +426,12 @@ public class LLVMGenerator {
         switch (stmtNode.getType()) {
             case LValAssignExp:
                 if (stmtNode.getLValNode().getExpNodes().isEmpty()) {
-                    // is not array
+                    // is not an array
                     Value input = getValue(stmtNode.getLValNode().getIdent().getContent());
                     visitExp(stmtNode.getExpNode());
                     tmpValue = buildFactory.buildStore(curBlock, input, tmpValue);
                 } else {
-                    // todo: is array
+                    // todo: is an array
                 }
                 break;
             case Exp:
@@ -536,7 +604,7 @@ public class LLVMGenerator {
             saveValue = getConst(name.toString());
         } else {
             if (lValNode.getExpNodes().isEmpty()) {
-                // is not array, maybe x
+                // is not an array, maybe x
                 Value addr = getValue(lValNode.getIdent().getContent());
                 tmpValue = addr;
                 Type type = addr.getType();
@@ -550,8 +618,7 @@ public class LLVMGenerator {
                     tmpValue = buildFactory.buildGEP(curBlock, tmpValue, indexList);
                 }
             } else {
-                // is array, maybe x[1][2]
-                // todo
+                // todo: is an array, maybe x[1][2]
             }
         }
     }

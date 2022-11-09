@@ -69,16 +69,16 @@ public class IRModule {
         refreshRegNumber();
         for (INode<Function, IRModule> function : functions) {
             if (function.getValue().isLibraryFunction()) {
-                s.append("declare ").append(function.getValue().toString()).append("\n\n");
+                s.append("declare ").append(function.getValue().toString()).append("\n");
             } else {
-                s.append("define dso_local ").append(function.getValue().toString()).append("{\n");
+                s.append("\ndefine dso_local ").append(function.getValue().toString()).append("{\n");
                 for (INode<BasicBlock, Function> basicBlock : function.getValue().getList()) {
                     if (basicBlock != function.getValue().getList().getBegin()) {
                         s.append("\n");
                     }
                     s.append(";<label>:").append(basicBlock.getValue().getName()).append(":\n").append(basicBlock.getValue().toString());
                 }
-                s.append("}\n\n");
+                s.append("}\n");
             }
         }
         return s.toString();

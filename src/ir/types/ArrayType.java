@@ -30,10 +30,8 @@ public class ArrayType implements Type {
 
     public List<Integer> getDimensions() {
         List<Integer> dimensions = new ArrayList<>();
-        Type type = this;
-        while (type instanceof ArrayType) {
+        for (Type type = this; type instanceof ArrayType; type = ((ArrayType) type).getElementType()) {
             dimensions.add(((ArrayType) type).getLength());
-            type = ((ArrayType) type).getElementType();
         }
         return dimensions;
     }

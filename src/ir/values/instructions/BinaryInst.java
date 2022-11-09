@@ -10,7 +10,7 @@ public class BinaryInst extends Instruction {
 
     public BinaryInst(BasicBlock basicBlock, Operator op, Value left, Value right) {
         super(VoidType.voidType, op, basicBlock);
-        // todo
+        // todo: may optimize div and mod here
         boolean isLeftI1 = left.getType() instanceof IntegerType && ((IntegerType) left.getType()).isI1();
         boolean isRightI1 = right.getType() instanceof IntegerType && ((IntegerType) right.getType()).isI1();
         boolean isLeftI32 = left.getType() instanceof IntegerType && ((IntegerType) left.getType()).isI32();
@@ -140,7 +140,6 @@ public class BinaryInst extends Instruction {
             default:
                 break;
         }
-        s += this.getOperands().get(0).getName() + ", " + this.getOperands().get(1).getName();
-        return s;
+        return s + this.getOperands().get(0).getName() + ", " + this.getOperands().get(1).getName();
     }
 }
