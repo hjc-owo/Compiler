@@ -86,7 +86,7 @@ public class UnaryExpNode {
             s += rightParentToken.getContent();
             return s;
         } else {
-            return unaryExpNode.getStr();
+            return unaryOpNode.getStr() + unaryExpNode.getStr();
         }
     }
 }

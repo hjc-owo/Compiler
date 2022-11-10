@@ -1,6 +1,7 @@
 package ir.values.instructions.mem;
 
 import ir.types.ArrayType;
+import ir.types.IntegerType;
 import ir.types.PointerType;
 import ir.types.Type;
 import ir.values.BasicBlock;
@@ -58,7 +59,10 @@ public class GEPInst extends MemInst {
         StringBuilder s = new StringBuilder();
         s.append(getName()).append(" = getelementptr ");
         // 如果是字符串，需要加 inbounds
-        if (getPointer().getType() instanceof PointerType && ((PointerType) getPointer().getType()).getTargetType() instanceof ArrayType) {
+        if (getPointer().getType() instanceof PointerType &&
+                ((PointerType) getPointer().getType()).getTargetType() instanceof ArrayType &&
+                ((ArrayType) ((PointerType) getPointer().getType()).getTargetType()).getElementType() instanceof IntegerType &&
+                ((IntegerType) ((ArrayType) ((PointerType) getPointer().getType()).getTargetType()).getElementType()).isI8()) {
             s.append("inbounds ");
         }
         s.append(((PointerType) getPointer().getType()).getTargetType()).append(", ");

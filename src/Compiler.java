@@ -13,9 +13,10 @@ public class Compiler {
     private static final int stage = 4;
     /**
      * 0 - 不做优化处理
-     * 1 - 变成字符串输出
+     * 1 - 连续加法变成乘法
      */
-    private static final int optimizationLevel = 0;
+    private static final int optimizationLevel = 1;
+    private static final boolean chToStr = true;
 
     public static void main(String[] args) throws IOException {
         IOUtils.delete("output.txt");
@@ -43,7 +44,7 @@ public class Compiler {
         }
 
         if (stage >= 4) {
-            LLVMGenerator generator = new LLVMGenerator(optimizationLevel);
+            LLVMGenerator generator = new LLVMGenerator(optimizationLevel, chToStr);
             generator.visitCompUnit(parser.getCompUnitNode());
             IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");
         }

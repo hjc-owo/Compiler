@@ -21,4 +21,8 @@ public class UnaryOpNode {
         IOUtils.write(token.toString());
         IOUtils.write(Parser.nodeType.get(NodeType.UnaryOp));
     }
+
+    public String getStr() {
+        return token.getContent();
+    }
 }

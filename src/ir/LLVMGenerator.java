@@ -161,9 +161,11 @@ public class LLVMGenerator {
     }
 
     private final int optimizationLevel;
+    public final boolean chToStr;
 
-    public LLVMGenerator(int optimizationLevel) {
+    public LLVMGenerator(int optimizationLevel, boolean chToStr) {
         this.optimizationLevel = optimizationLevel;
+        this.chToStr = chToStr;
     }
 
 
@@ -702,12 +704,7 @@ public class LLVMGenerator {
                         }});
                         i++;
                     } else {
-                        if (optimizationLevel < 1) {
-                            int finalI = i;
-                            buildFactory.buildCall(curBlock, (Function) getValue("putch"), new ArrayList<Value>() {{
-                                add(buildFactory.getConstInt(formatStrings.charAt(finalI)));
-                            }});
-                        } else {
+                        if (chToStr) {
                             int j = i;
                             while (j < formatStrings.length() && formatStrings.charAt(j) != '%') {
                                 j++;
@@ -727,6 +724,11 @@ public class LLVMGenerator {
                                 }});
                                 i = j - 1;
                             }
+                        } else {
+                            int finalI = i;
+                            buildFactory.buildCall(curBlock, (Function) getValue("putch"), new ArrayList<Value>() {{
+                                add(buildFactory.getConstInt(formatStrings.charAt(finalI)));
+                            }});
                         }
                     }
                 }
@@ -931,41 +933,41 @@ public class LLVMGenerator {
         } else {
             Value value = tmpValue;
             Operator op = tmpOp;
-            if (tmpValue == null && addExpNode.getAddExpNode() != null) {
-                // 试图把连加变成乘法
-                if (Objects.equals(addExpNode.getMulExpNode().getStr(), addExpNode.getAddExpNode().getMulExpNode().getStr())) {
-                    int times = 1;
-                    MulExpNode mulExpNode = addExpNode.getMulExpNode();
-                    AddExpNode now = addExpNode;
-                    AddExpNode next = addExpNode.getAddExpNode();
-                    while (next != null &&
-                            next.getMulExpNode() != null &&
-                            Objects.equals(mulExpNode.getStr(), next.getMulExpNode().getStr()) &&
-                            now.getOperator() != null) {
-                        times += now.getOperator().getType() == TokenType.PLUS ? 1 : -1;
-                        now = next;
-                        next = next.getAddExpNode();
+            if (optimizationLevel >= 1) {
+                if (tmpValue == null && addExpNode.getAddExpNode() != null) {
+                    // 试图把连加变成乘法
+                    if (Objects.equals(addExpNode.getMulExpNode().getStr(), addExpNode.getAddExpNode().getMulExpNode().getStr())) {
+                        int times = 1;
+                        MulExpNode mulExpNode = addExpNode.getMulExpNode();
+                        AddExpNode now = addExpNode;
+                        AddExpNode next = addExpNode.getAddExpNode();
+                        while (next != null &&
+                                next.getMulExpNode() != null &&
+                                Objects.equals(mulExpNode.getStr(), next.getMulExpNode().getStr()) &&
+                                now.getOperator() != null) {
+                            times += now.getOperator().getType() == TokenType.PLUS ? 1 : -1;
+                            now = next;
+                            next = next.getAddExpNode();
+                        }
+                        tmpValue = null;
+                        visitMulExp(mulExpNode);
+                        if (times == 2) {
+                            tmpValue = buildFactory.buildBinary(curBlock, Operator.Add, tmpValue, tmpValue);
+                        } else if (times == 1) {
+                            // do nothing
+                        } else if (times == 0) {
+                            tmpValue = buildFactory.getConstInt(0);
+                        } else if (times == -1) {
+                            tmpValue = buildFactory.buildBinary(curBlock, Operator.Sub, ConstInt.ZERO, tmpValue);
+                        } else {
+                            tmpValue = buildFactory.buildBinary(curBlock, Operator.Mul, tmpValue, buildFactory.getConstInt(times));
+                        }
+                        tmpOp = now.getOperator() == null ? Operator.Add : now.getOperator().getType() == TokenType.PLUS ? Operator.Add : Operator.Sub;
+                        if (next != null) {
+                            visitAddExp(next);
+                        }
+                        return;
                     }
-                    tmpValue = null;
-                    visitMulExp(mulExpNode);
-                    if (times > 2) {
-                        tmpValue = buildFactory.buildBinary(curBlock, Operator.Mul, tmpValue, buildFactory.getConstInt(times));
-                    } else if (times == 2) {
-                        tmpValue = buildFactory.buildBinary(curBlock, Operator.Add, tmpValue, tmpValue);
-                    } else if (times == 1) {
-                        // do nothing
-                    } else if (times == 0) {
-                        tmpValue = buildFactory.getConstInt(0);
-                    } else if (times == -1) {
-                        tmpValue = buildFactory.buildBinary(curBlock, Operator.Sub, ConstInt.ZERO, tmpValue);
-                    } else {
-                        tmpValue = buildFactory.buildBinary(curBlock, Operator.Sub, ConstInt.ZERO, buildFactory.buildBinary(curBlock, Operator.Add, tmpValue, tmpValue));
-                    }
-                    tmpOp = now.getOperator() == null ? Operator.Add : now.getOperator().getType() == TokenType.PLUS ? Operator.Add : Operator.Sub;
-                    if (next != null) {
-                        visitAddExp(next);
-                    }
-                    return;
                 }
             }
             tmpValue = null;
