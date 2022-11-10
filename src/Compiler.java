@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.util.List;
 
 public class Compiler {
-    private static final int stage = 3;
+    private static final int stage = 4;
     /**
      * 0 - 不做优化处理
      * 1 - 变成字符串输出
      */
-    private static final int optimizationLevel = 1;
+    private static final int optimizationLevel = 0;
 
     public static void main(String[] args) throws IOException {
         IOUtils.delete("output.txt");
@@ -35,16 +35,16 @@ public class Compiler {
             parser.printParseAns();
         }
 
-        ErrorHandler errorHandler = new ErrorHandler();
-        errorHandler.compUnitError(parser.getCompUnitNode());
-        if (!errorHandler.getErrors().isEmpty()) {
+        if (stage == 3) {
+            ErrorHandler errorHandler = new ErrorHandler();
+            errorHandler.compUnitError(parser.getCompUnitNode());
             errorHandler.printErrors();
             return;
         }
 
-        LLVMGenerator generator = new LLVMGenerator(optimizationLevel);
-        generator.visitCompUnit(parser.getCompUnitNode());
-        if (stage == 3) {
+        if (stage >= 4) {
+            LLVMGenerator generator = new LLVMGenerator(optimizationLevel);
+            generator.visitCompUnit(parser.getCompUnitNode());
             IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");
         }
     }

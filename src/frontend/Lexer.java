@@ -41,6 +41,7 @@ public class Lexer {
 
         for (int i = 0; i < contentLength; i++) {
             char c = content.charAt(i);
+            char next = i + 1 < contentLength ? content.charAt(i + 1) : '\0';
             if (c == '\n') lineNumber++;
             else if (c == '_' || Character.isLetter(c)) { // 标识符
                 String s = "";
@@ -89,18 +90,18 @@ public class Lexer {
                 }
                 tokens.add(new Token(TokenType.STRCON, lineNumber, s));
             } else if (c == '!') { // ! 或 !=
-                if (content.charAt(i + 1) != '=') tokens.add(new Token(TokenType.NOT, lineNumber, "!"));
+                if (next != '=') tokens.add(new Token(TokenType.NOT, lineNumber, "!"));
                 else {
                     tokens.add(new Token(TokenType.NEQ, lineNumber, "!="));
                     i++;
                 }
             } else if (c == '&') { // &&
-                if (content.charAt(i + 1) == '&') {
+                if (next == '&') {
                     tokens.add(new Token(TokenType.AND, lineNumber, "&&"));
                     i++;
                 }
             } else if (c == '|') { // ||
-                if (content.charAt(i + 1) == '|') {
+                if (next == '|') {
                     tokens.add(new Token(TokenType.OR, lineNumber, "||"));
                     i++;
                 }
@@ -111,11 +112,10 @@ public class Lexer {
             } else if (c == '*') { // *
                 tokens.add(new Token(TokenType.MULT, lineNumber, "*"));
             } else if (c == '/') { // / 或 // 或 /*
-                char d = content.charAt(i + 1);
-                if (d == '/') { // //
+                if (next == '/') { // //
                     int j = content.indexOf('\n', i + 2);
                     i = j - 1;
-                } else if (d == '*') { // /* */
+                } else if (next == '*') { // /* */
                     for (int j = i + 2; j < contentLength; j++) {
                         char e = content.charAt(j);
                         if (e == '\n') lineNumber++;
@@ -128,21 +128,21 @@ public class Lexer {
             } else if (c == '%') { // %
                 tokens.add(new Token(TokenType.MOD, lineNumber, "%"));
             } else if (c == '<') { // < 或 <=
-                if (content.charAt(i + 1) != '=') { // <
+                if (next != '=') { // <
                     tokens.add(new Token(TokenType.LSS, lineNumber, "<"));
                 } else {
                     tokens.add(new Token(TokenType.LEQ, lineNumber, "<="));
                     i++;
                 }
             } else if (c == '>') { // > 或 >=
-                if (content.charAt(i + 1) != '=') { // >
+                if (next != '=') { // >
                     tokens.add(new Token(TokenType.GRE, lineNumber, ">"));
                 } else {
                     tokens.add(new Token(TokenType.GEQ, lineNumber, ">="));
                     i++;
                 }
             } else if (c == '=') { // = 或 ==
-                if (content.charAt(i + 1) != '=') tokens.add(new Token(TokenType.ASSIGN, lineNumber, "="));
+                if (next != '=') tokens.add(new Token(TokenType.ASSIGN, lineNumber, "="));
                 else {
                     tokens.add(new Token(TokenType.EQL, lineNumber, "=="));
                     i++;

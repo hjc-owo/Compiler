@@ -84,11 +84,6 @@ public class ConstArray extends Const {
         if (allZero()) {
             return this.getType().toString() + " " + "zeroinitializer";
         } else {
-            // use recursion to output llvm global array
-            // like this:
-            // [3 x [2 x i32]] [[2 x i32] [i32 1, i32 2], [i32 3, i32 4], [i32 5, i32 6]]
-            // [4 x i32] [i32 1, i32 2, i32 3, i32 4]
-            // [2 x [3 x [2 x i32]]] [[3 x [2 x i32]] [[2 x i32] [i32 1, i32 2], [i32 3, i32 4], [i32 5, i32 6]], [3 x [2 x i32]] [[2 x i32] [i32 7, i32 8], [i32 9, i32 10], [i32 11, i32 12]]]
             StringBuilder sb = new StringBuilder();
             sb.append(this.getType().toString()).append(" ").append("[");
             for (int i = 0; i < array.size(); i++) {

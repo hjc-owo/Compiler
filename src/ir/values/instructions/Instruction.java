@@ -7,7 +7,7 @@ import ir.values.instructions.terminator.BrInst;
 import ir.values.instructions.terminator.RetInst;
 import utils.INode;
 
-public class Instruction extends User {
+public abstract class Instruction extends User {
     private Operator op;
     private INode<Instruction, BasicBlock> node;
     private int handler;

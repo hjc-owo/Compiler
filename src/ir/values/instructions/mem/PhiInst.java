@@ -18,7 +18,8 @@ public class PhiInst extends MemInst {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder(getName() + " = phi " + getType() + " ");
+        StringBuilder s = new StringBuilder();
+        s.append(getName()).append(" = phi ").append(getType()).append(" ");
         for (int i = 0; i < getOperands().size(); i++) {
             if (i != 0) {
                 s.append(", ");
