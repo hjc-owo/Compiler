@@ -7,6 +7,7 @@ import token.Token;
 import token.TokenType;
 import utils.IOUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +30,11 @@ public class Lexer {
         put("void", TokenType.VOIDTK);
     }};
 
-    public Lexer(List<Token> tokens) {
-        this.tokens = tokens;
+    public Lexer() {
+        this.tokens = new ArrayList<>();
     }
 
-    public void analyze(String content) {
+    public List<Token> analyze(String content) {
 
         int lineNumber = 1; // 当前所在行数
         int contentLength = content.length(); // 源代码长度
@@ -155,7 +156,7 @@ public class Lexer {
             else if (c == '{') tokens.add(new Token(TokenType.LBRACE, lineNumber, "{"));
             else if (c == '}') tokens.add(new Token(TokenType.RBRACE, lineNumber, "}"));
         }
-
+        return tokens;
     }
 
     public void printLexAns() {

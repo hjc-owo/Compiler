@@ -103,6 +103,10 @@ public class BuildFactory {
         return new ConstInt(value);
     }
 
+    public ConstString getConstString(String value) {
+        return new ConstString(value);
+    }
+
     /**
      * Array
      */

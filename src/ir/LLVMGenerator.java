@@ -59,6 +59,10 @@ public class LLVMGenerator {
         getCurSymbolTable().put(name, value);
     }
 
+    public void addGlobalSymbol(String name, Value value) {
+        symbolTable.get(0).put(name, value);
+    }
+
     public Value getValue(String name) {
         for (int i = symbolTable.size() - 1; i >= 0; i--) {
             if (symbolTable.get(i).containsKey(name)) {
@@ -117,6 +121,33 @@ public class LLVMGenerator {
     }
 
     /**
+     * 字符串相关
+     */
+    private List<String> stringList = new ArrayList<>();
+
+    private int getStringIndex(String str) {
+        for (int i = 0; i < stringList.size(); i++) {
+            if (stringList.get(i).equals(str)) {
+                return i;
+            }
+        }
+        stringList.add(str);
+        Type type = buildFactory.getArrayType(IntegerType.i8, str.length() + 1);
+        Value value = buildFactory.buildGlobalVar(getStringName(str), type, true, buildFactory.getConstString(str));
+        addGlobalSymbol(getStringName(str), value);
+        return stringList.size() - 1;
+    }
+
+    private String getStringName(int index) {
+        return "_str_" + index;
+    }
+
+    private String getStringName(String str) {
+        return getStringName(getStringIndex(str));
+    }
+
+
+    /**
      * 添加和删除当前块符号表和常量表
      */
     public void addSymbolAndConstTable() {
@@ -127,6 +158,12 @@ public class LLVMGenerator {
     public void removeSymbolAndConstTable() {
         symbolTable.remove(symbolTable.size() - 1);
         constTable.remove(constTable.size() - 1);
+    }
+
+    private final int optimizationLevel;
+
+    public LLVMGenerator(int optimizationLevel) {
+        this.optimizationLevel = optimizationLevel;
     }
 
 
@@ -229,7 +266,7 @@ public class LLVMGenerator {
                 if (isGlobal) {
                     buildFactory.buildInitArray(curArray, tmpOffset, tmpValue);
                 } else {
-                    buildFactory.buildStore(curBlock, tmpValue, buildFactory.buildGEP(curBlock, curArray, tmpOffset));
+                    buildFactory.buildStore(curBlock, buildFactory.buildGEP(curBlock, curArray, tmpOffset), tmpValue);
                 }
                 StringBuilder name = new StringBuilder(tmpName);
                 List<Value> args = ((ArrayType) ((PointerType) curArray.getType()).getTargetType()).offset2Index(tmpOffset);
@@ -290,8 +327,39 @@ public class LLVMGenerator {
                 addSymbol(name, tmpValue);
             }
         } else {
-            // todo: is an array
+            // is an array
             isConst = true;
+            List<Integer> dims = new ArrayList<>();
+            for (ConstExpNode constExpNode : varDefNode.getConstExpNodes()) {
+                visitConstExp(constExpNode);
+                dims.add(saveValue);
+            }
+            isConst = false;
+            tmpDims = new ArrayList<>(dims);
+            Type type = null;
+            for (int i = dims.size() - 1; i >= 0; i--) {
+                if (type == null) {
+                    type = buildFactory.getArrayType(tmpType, dims.get(i));
+                } else {
+                    type = buildFactory.getArrayType(type, dims.get(i));
+                }
+            }
+            if (isGlobal) {
+                tmpValue = buildFactory.buildGlobalArray(name, type, false);
+            } else {
+                tmpValue = buildFactory.buildArray(curBlock, false, type);
+            }
+            addSymbol(name, tmpValue);
+            curArray = tmpValue;
+            if (varDefNode.getInitValNode() != null) {
+                isArray = true;
+                tmpName = name;
+                tmpDepth = 0;
+                tmpOffset = 0;
+                visitInitVal(varDefNode.getInitValNode());
+                isArray = false;
+            }
+            isConst = false;
         }
     }
 
@@ -301,8 +369,37 @@ public class LLVMGenerator {
             // Exp
             visitExp(initValNode.getExpNode());
         } else {
-            // todo: init array
             // '{' [ InitVal { ',' InitVal } ] '}'
+            if (initValNode.getExpNode() != null) {
+                if (isGlobal) {
+                    isConst = true;
+                }
+                saveValue = null;
+                tmpValue = null;
+                visitExp(initValNode.getExpNode());
+                isConst = false;
+                tmpDepth = 1;
+                if (isGlobal) {
+                    tmpValue = buildFactory.getConstInt(saveValue);
+                    buildFactory.buildInitArray(curArray, tmpOffset, tmpValue);
+                } else {
+                    buildFactory.buildStore(curBlock, buildFactory.buildGEP(curBlock, curArray, tmpOffset), tmpValue);
+                }
+                tmpOffset++;
+            } else if (!initValNode.getInitValNodes().isEmpty()) {
+                int depth = 0, offset = tmpOffset;
+                for (InitValNode initValNode1 : initValNode.getInitValNodes()) {
+                    visitInitVal(initValNode1);
+                    depth = Math.max(depth, tmpDepth);
+                }
+                depth++;
+                int size = 1;
+                for (int i = 1; i < depth; i++) {
+                    size *= tmpDims.get(tmpDims.size() - i);
+                }
+                tmpOffset = Math.max(tmpOffset, offset + size);
+                tmpDepth = depth;
+            }
         }
     }
 
@@ -378,7 +475,7 @@ public class LLVMGenerator {
             } else {
                 List<Integer> dims = new ArrayList<>();
                 dims.add(-1);
-                if (funcFParamNode.getConstExpNodes().isEmpty()) {
+                if (!funcFParamNode.getConstExpNodes().isEmpty()) {
                     for (ConstExpNode constExpNode : funcFParamNode.getConstExpNodes()) {
                         isConst = true;
                         visitConstExp(constExpNode);
@@ -431,7 +528,25 @@ public class LLVMGenerator {
                     visitExp(stmtNode.getExpNode());
                     tmpValue = buildFactory.buildStore(curBlock, input, tmpValue);
                 } else {
-                    // todo: is an array
+                    // is an array
+                    List<Value> indexList = new ArrayList<>();
+                    for (ExpNode expNode : stmtNode.getLValNode().getExpNodes()) {
+                        visitExp(expNode);
+                        indexList.add(tmpValue);
+                    }
+                    tmpValue = getValue(stmtNode.getLValNode().getIdent().getContent());
+                    Value addr;
+                    Type type = tmpValue.getType(), targetType = ((PointerType) type).getTargetType();
+                    if (targetType instanceof PointerType) {
+                        // arr[][3]
+                        tmpValue = buildFactory.buildLoad(curBlock, tmpValue);
+                    } else {
+                        // arr[3][2]
+                        indexList.add(0, ConstInt.ZERO);
+                    }
+                    addr = buildFactory.buildGEP(curBlock, tmpValue, indexList);
+                    visitExp(stmtNode.getExpNode());
+                    tmpValue = buildFactory.buildStore(curBlock, addr, tmpValue);
                 }
                 break;
             case Exp:
@@ -548,9 +663,30 @@ public class LLVMGenerator {
                 }
                 break;
             case LValAssignGetint:
-                Value input = getValue(stmtNode.getLValNode().getIdent().getContent());
-                tmpValue = buildFactory.buildCall(curBlock, (Function) getValue("getint"), new ArrayList<>());
-                buildFactory.buildStore(curBlock, input, tmpValue);
+                if (stmtNode.getLValNode().getExpNodes().isEmpty()) {
+                    Value input = getValue(stmtNode.getLValNode().getIdent().getContent());
+                    tmpValue = buildFactory.buildCall(curBlock, (Function) getValue("getint"), new ArrayList<>());
+                    buildFactory.buildStore(curBlock, input, tmpValue);
+                } else {
+                    List<Value> indexList = new ArrayList<>();
+                    for (ExpNode expNode : stmtNode.getLValNode().getExpNodes()) {
+                        visitExp(expNode);
+                        indexList.add(tmpValue);
+                    }
+                    tmpValue = getValue(stmtNode.getLValNode().getIdent().getContent());
+                    Value addr;
+                    Type type = tmpValue.getType(), targetType = ((PointerType) type).getTargetType();
+                    if (targetType instanceof PointerType) {
+                        // arr[][3]
+                        tmpValue = buildFactory.buildLoad(curBlock, tmpValue);
+                    } else {
+                        // arr[3][2]
+                        indexList.add(0, ConstInt.ZERO);
+                    }
+                    addr = buildFactory.buildGEP(curBlock, tmpValue, indexList);
+                    Value input = buildFactory.buildCall(curBlock, (Function) getValue("getint"), new ArrayList<>());
+                    tmpValue = buildFactory.buildStore(curBlock, addr, input);
+                }
                 break;
             case Printf:
                 String formatStrings = stmtNode.getFormatString().getContent().replace("\\n", "\n").replace("\"", "");
@@ -566,10 +702,32 @@ public class LLVMGenerator {
                         }});
                         i++;
                     } else {
-                        int finalI = i;
-                        buildFactory.buildCall(curBlock, (Function) getValue("putch"), new ArrayList<Value>() {{
-                            add(new ConstInt(formatStrings.charAt(finalI)));
-                        }});
+                        if (optimizationLevel < 1) {
+                            int finalI = i;
+                            buildFactory.buildCall(curBlock, (Function) getValue("putch"), new ArrayList<Value>() {{
+                                add(buildFactory.getConstInt(formatStrings.charAt(finalI)));
+                            }});
+                        } else {
+                            int j = i;
+                            while (j < formatStrings.length() && formatStrings.charAt(j) != '%') {
+                                j++;
+                            }
+                            String str = formatStrings.substring(i, j);
+                            if (str.length() == 1) {
+                                buildFactory.buildCall(curBlock, (Function) getValue("putch"), new ArrayList<Value>() {{
+                                    add(buildFactory.getConstInt(str.charAt(0)));
+                                }});
+                            } else {
+                                Value strAddr = buildFactory.buildGEP(curBlock, getValue(getStringName(str)), new ArrayList<Value>() {{
+                                    add(ConstInt.ZERO);
+                                    add(ConstInt.ZERO);
+                                }});
+                                buildFactory.buildCall(curBlock, (Function) getValue("putstr"), new ArrayList<Value>() {{
+                                    add(strAddr);
+                                }});
+                                i = j - 1;
+                            }
+                        }
                     }
                 }
                 break;
@@ -604,7 +762,7 @@ public class LLVMGenerator {
             saveValue = getConst(name.toString());
         } else {
             if (lValNode.getExpNodes().isEmpty()) {
-                // is not an array, maybe x
+                // is not an array
                 Value addr = getValue(lValNode.getIdent().getContent());
                 tmpValue = addr;
                 Type type = addr.getType();
@@ -618,7 +776,31 @@ public class LLVMGenerator {
                     tmpValue = buildFactory.buildGEP(curBlock, tmpValue, indexList);
                 }
             } else {
-                // todo: is an array, maybe x[1][2]
+                // is an array, maybe arr[1][2] or arr[][2]
+                List<Value> indexList = new ArrayList<>();
+                for (ExpNode expNode : lValNode.getExpNodes()) {
+                    visitExp(expNode);
+                    indexList.add(tmpValue);
+                }
+                tmpValue = getValue(lValNode.getIdent().getContent());
+                Value addr;
+                Type type = tmpValue.getType(), targetType = ((PointerType) type).getTargetType();
+                if (targetType instanceof PointerType) {
+                    // arr[][3]
+                    tmpValue = buildFactory.buildLoad(curBlock, tmpValue);
+                } else {
+                    // arr[1][2]
+                    indexList.add(0, ConstInt.ZERO);
+                }
+                addr = buildFactory.buildGEP(curBlock, tmpValue, indexList);
+                if (((PointerType) addr.getType()).getTargetType() instanceof ArrayType) {
+                    List<Value> indexList2 = new ArrayList<>();
+                    indexList2.add(ConstInt.ZERO);
+                    indexList2.add(ConstInt.ZERO);
+                    tmpValue = buildFactory.buildGEP(curBlock, addr, indexList2);
+                } else {
+                    tmpValue = buildFactory.buildLoad(curBlock, addr);
+                }
             }
         }
     }
@@ -749,7 +931,8 @@ public class LLVMGenerator {
         } else {
             Value value = tmpValue;
             Operator op = tmpOp;
-            if (tmpValue != null && addExpNode.getAddExpNode() != null) {
+            if (tmpValue == null && addExpNode.getAddExpNode() != null) {
+                // 试图把连加变成乘法
                 if (Objects.equals(addExpNode.getMulExpNode().getStr(), addExpNode.getAddExpNode().getMulExpNode().getStr())) {
                     int times = 1;
                     MulExpNode mulExpNode = addExpNode.getMulExpNode();
@@ -758,15 +941,27 @@ public class LLVMGenerator {
                     while (next != null &&
                             next.getMulExpNode() != null &&
                             Objects.equals(mulExpNode.getStr(), next.getMulExpNode().getStr()) &&
-                            now.getOperator().getType() == TokenType.PLUS) {
-                        times++;
+                            now.getOperator() != null) {
+                        times += now.getOperator().getType() == TokenType.PLUS ? 1 : -1;
                         now = next;
                         next = next.getAddExpNode();
                     }
                     tmpValue = null;
                     visitMulExp(mulExpNode);
-                    tmpValue = buildFactory.buildBinary(curBlock, Operator.Mul, tmpValue, buildFactory.getConstInt(times));
-                    tmpOp = now.getOperator().getType() == TokenType.PLUS ? Operator.Add : Operator.Sub;
+                    if (times > 2) {
+                        tmpValue = buildFactory.buildBinary(curBlock, Operator.Mul, tmpValue, buildFactory.getConstInt(times));
+                    } else if (times == 2) {
+                        tmpValue = buildFactory.buildBinary(curBlock, Operator.Add, tmpValue, tmpValue);
+                    } else if (times == 1) {
+                        // do nothing
+                    } else if (times == 0) {
+                        tmpValue = buildFactory.getConstInt(0);
+                    } else if (times == -1) {
+                        tmpValue = buildFactory.buildBinary(curBlock, Operator.Sub, ConstInt.ZERO, tmpValue);
+                    } else {
+                        tmpValue = buildFactory.buildBinary(curBlock, Operator.Sub, ConstInt.ZERO, buildFactory.buildBinary(curBlock, Operator.Add, tmpValue, tmpValue));
+                    }
+                    tmpOp = now.getOperator() == null ? Operator.Add : now.getOperator().getType() == TokenType.PLUS ? Operator.Add : Operator.Sub;
                     if (next != null) {
                         visitAddExp(next);
                     }

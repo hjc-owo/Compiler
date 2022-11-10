@@ -172,11 +172,7 @@ public class ErrorHandler {
         if (currentSymbolTable.containsInCurrent(funcFParamNode.getIdent().getContent())) {
             ErrorHandler.addError(new Error(funcFParamNode.getIdent().getLineNumber(), ErrorType.b));
         }
-        if (funcFParamNode.getLeftBrackets().size() == 0) {
-            currentSymbolTable.put(funcFParamNode.getIdent().getContent(), new ArraySymbol(funcFParamNode.getIdent().getContent(), false, 0));
-        } else {
-            currentSymbolTable.put(funcFParamNode.getIdent().getContent(), new ArraySymbol(funcFParamNode.getIdent().getContent(), false, funcFParamNode.getConstExpNodes().size()));
-        }
+        currentSymbolTable.put(funcFParamNode.getIdent().getContent(), new ArraySymbol(funcFParamNode.getIdent().getContent(), false, funcFParamNode.getLeftBrackets().size()));
     }
 
     private void blockError(BlockNode blockNode) {

@@ -33,4 +33,15 @@ public class FuncRParamsNode {
         }
         IOUtils.write(Parser.nodeType.get(NodeType.FuncRParams));
     }
+
+    public String getStr() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < expNodes.size(); i++) {
+            sb.append(expNodes.get(i).getStr());
+            if (i != expNodes.size() - 1) {
+                sb.append(commas.get(i).getContent());
+            }
+        }
+        return sb.toString();
+    }
 }

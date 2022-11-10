@@ -7,12 +7,15 @@ import token.Token;
 import utils.IOUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Compiler {
-    private static List<Token> tokens = new ArrayList<>();
-    public static final int stage = 3;
+    private static final int stage = 3;
+    /**
+     * 0 - 不做优化处理
+     * 1 - 变成字符串输出
+     */
+    private static final int optimizationLevel = 1;
 
     public static void main(String[] args) throws IOException {
         IOUtils.delete("output.txt");
@@ -20,8 +23,8 @@ public class Compiler {
         IOUtils.delete("llvm_ir.txt");
         String content = IOUtils.read("testfile.txt");
 
-        Lexer lexer = new Lexer(tokens);
-        lexer.analyze(content);
+        Lexer lexer = new Lexer();
+        List<Token> tokens = lexer.analyze(content);
         if (stage == 1) {
             lexer.printLexAns();
         }
@@ -39,7 +42,7 @@ public class Compiler {
             return;
         }
 
-        LLVMGenerator generator = new LLVMGenerator();
+        LLVMGenerator generator = new LLVMGenerator(optimizationLevel);
         generator.visitCompUnit(parser.getCompUnitNode());
         if (stage == 3) {
             IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");

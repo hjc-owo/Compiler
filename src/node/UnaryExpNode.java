@@ -79,7 +79,12 @@ public class UnaryExpNode {
         if (primaryExpNode != null) {
             return primaryExpNode.getStr();
         } else if (ident != null) {
-            return ident.getContent();
+            String s = ident.getContent() + leftParentToken.getContent();
+            if (funcRParamsNode != null) {
+                s += funcRParamsNode.getStr();
+            }
+            s += rightParentToken.getContent();
+            return s;
         } else {
             return unaryExpNode.getStr();
         }

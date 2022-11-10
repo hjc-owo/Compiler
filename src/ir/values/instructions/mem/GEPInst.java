@@ -56,7 +56,12 @@ public class GEPInst extends MemInst {
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
-        s.append(getName()).append(" = getelementptr ").append(((PointerType) getPointer().getType()).getTargetType()).append(", ");
+        s.append(getName()).append(" = getelementptr ");
+        // 如果是字符串，需要加 inbounds
+        if (getPointer().getType() instanceof PointerType && ((PointerType) getPointer().getType()).getTargetType() instanceof ArrayType) {
+            s.append("inbounds ");
+        }
+        s.append(((PointerType) getPointer().getType()).getTargetType()).append(", ");
         for (int i = 0; i < getOperands().size(); i++) {
             if (i == 0) {
                 s.append(getPointer().getType()).append(" ").append(getPointer().getName());
