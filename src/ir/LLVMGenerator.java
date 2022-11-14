@@ -1,5 +1,6 @@
 package ir;
 
+import config.Config;
 import ir.types.*;
 import ir.values.*;
 import ir.values.instructions.Operator;
@@ -159,15 +160,6 @@ public class LLVMGenerator {
         symbolTable.remove(symbolTable.size() - 1);
         constTable.remove(constTable.size() - 1);
     }
-
-    private final int optimizationLevel;
-    public final boolean chToStr;
-
-    public LLVMGenerator(int optimizationLevel, boolean chToStr) {
-        this.optimizationLevel = optimizationLevel;
-        this.chToStr = chToStr;
-    }
-
 
     /**
      * 遍历语法树
@@ -704,7 +696,7 @@ public class LLVMGenerator {
                         }});
                         i++;
                     } else {
-                        if (chToStr) {
+                        if (Config.chToStr) {
                             int j = i;
                             while (j < formatStrings.length() && formatStrings.charAt(j) != '%') {
                                 j++;
@@ -933,7 +925,7 @@ public class LLVMGenerator {
         } else {
             Value value = tmpValue;
             Operator op = tmpOp;
-            if (optimizationLevel >= 1) {
+            if (Config.addToMul) {
                 if (tmpValue == null && addExpNode.getAddExpNode() != null) {
                     // 试图把连加变成乘法
                     if (Objects.equals(addExpNode.getMulExpNode().getStr(), addExpNode.getAddExpNode().getMulExpNode().getStr())) {

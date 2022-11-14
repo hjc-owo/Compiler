@@ -54,6 +54,14 @@ public class BinaryInst extends Instruction {
         return this.getOperator() == Operator.Mod;
     }
 
+    public boolean isShl() {
+        return this.getOperator() == Operator.Shl;
+    }
+
+    public boolean isShr() {
+        return this.getOperator() == Operator.Shr;
+    }
+
     public boolean isAnd() {
         return this.getOperator() == Operator.And;
     }
@@ -112,6 +120,12 @@ public class BinaryInst extends Instruction {
                 break;
             case Mod:
                 s += "srem i32 ";
+                break;
+            case Shl:
+                s += "shl i32 ";
+                break;
+            case Shr:
+                s += "ashr i32 ";
                 break;
             case And:
                 s += "and " + this.getOperands().get(0).getType().toString() + " ";

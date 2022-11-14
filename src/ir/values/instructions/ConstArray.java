@@ -55,6 +55,18 @@ public class ConstArray extends Const {
         this.capacity = capacity;
     }
 
+    public List<Value> get1DArray() {
+        List<Value> result = new ArrayList<>();
+        for (Value value : array) {
+            if (value instanceof ConstArray) {
+                result.addAll(((ConstArray) value).get1DArray());
+            } else {
+                result.add(value);
+            }
+        }
+        return result;
+    }
+
     public void storeValue(int offset, Value value) {
         // recursion
         if (elementType instanceof ArrayType) {
