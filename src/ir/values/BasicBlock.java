@@ -4,6 +4,7 @@ import ir.types.FunctionType;
 import ir.types.LabelType;
 import ir.types.VoidType;
 import ir.values.instructions.Instruction;
+import ir.values.instructions.mem.PhiInst;
 import ir.values.instructions.mem.StoreInst;
 import ir.values.instructions.terminator.BrInst;
 import ir.values.instructions.terminator.CallInst;
@@ -12,6 +13,7 @@ import utils.IList;
 import utils.INode;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class BasicBlock extends Value {
@@ -90,5 +92,48 @@ public class BasicBlock extends Value {
             s.append("    ").append(instruction.getValue().toString()).append("\n");
         }
         return s.toString();
+    }
+
+    public void removeSelf() {
+        for (BasicBlock bb : this.getPredecessors()) {
+            bb.getSuccessors().removeIf(basicBlock -> basicBlock.equals(this));
+        }
+        for (BasicBlock bb : this.getSuccessors()) {
+            bb.getPredecessors().forEach(pred -> {
+                if (pred.equals(this)) {
+                    removeBasicBlockSucc(this, bb);
+                }
+            });
+            bb.getPredecessors().removeIf(basicBlock -> basicBlock.equals(this));
+        }
+
+        for (INode<Instruction, BasicBlock> instNode : getInstructions()) {
+            Instruction inst = instNode.getValue();
+            inst.removeUseFromOperands();
+        }
+        this.getNode().removeFromList();
+    }
+
+    public void removeBasicBlockSucc(BasicBlock pred, BasicBlock succ) {
+        HashSet<Integer> idx = new HashSet<>();
+        idx.add(succ.getPredecessors().indexOf(pred));
+        INode<Instruction, BasicBlock> instNode = succ.getInstructions().getBegin();
+        while (instNode != null) {
+            INode<Instruction, BasicBlock> ninstNode = instNode.getNext();
+            Instruction inst = instNode.getValue();
+            if (!(inst instanceof PhiInst)) {
+                break;
+            }
+
+            if (inst.getOperands().size() == 1) {
+                inst.replaceUsedWith(inst.getOperands().get(0));
+                inst.removeUseFromOperands();
+                instNode.removeFromList();
+            } else {
+                inst.removeNumberOperand(idx);
+            }
+
+            instNode = ninstNode;
+        }
     }
 }

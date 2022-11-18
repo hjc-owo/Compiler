@@ -4,6 +4,7 @@ import frontend.Lexer;
 import frontend.Parser;
 import ir.IRModule;
 import ir.LLVMGenerator;
+import pass.PassModule;
 import token.Token;
 import utils.IOUtils;
 
@@ -37,7 +38,15 @@ public class Compiler {
         if (Config.ir) {
             LLVMGenerator generator = new LLVMGenerator();
             generator.visitCompUnit(parser.getCompUnitNode());
+            IOUtils.write(IRModule.getInstance().toString(), "llvm_ir_raw.txt");
+            PassModule.getInstance().runIRPasses();
             IOUtils.write(IRModule.getInstance().toString(), "llvm_ir.txt");
         }
+
+//        if (Config.mips) {
+//            MipsGenModule.getInstance().loadIR();
+//            MipsGenModule.getInstance().run();
+//            IOUtils.write(MipsGenModule.getInstance().genMips(), "mips.txt");
+//        }
     }
 }

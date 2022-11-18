@@ -7,7 +7,9 @@ import utils.IList;
 import utils.INode;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Function extends Value {
     private final IList<BasicBlock, Function> list;
@@ -16,6 +18,11 @@ public class Function extends Value {
     private final List<Function> predecessors;
     private final List<Function> successors;
     private final boolean isLibraryFunction;
+    // 过程间分析
+    private boolean hasSideEffect = false;
+    private boolean useGlobalVar = false;
+    private final Set<GlobalVar> storeGVs = new HashSet<>();
+    private final Set<GlobalVar> loadGVs = new HashSet<>();
 
     public Function(String name, Type type, boolean isLibraryFunction) {
         super(name, type);
@@ -62,6 +69,34 @@ public class Function extends Value {
 
     public boolean isLibraryFunction() {
         return isLibraryFunction;
+    }
+
+    public boolean hasSideEffect() {
+        return hasSideEffect || isLibraryFunction;
+    }
+
+    public void setHasSideEffect(boolean hasSideEffect) {
+        this.hasSideEffect = hasSideEffect;
+    }
+
+    public boolean isUseGlobalVar() {
+        return useGlobalVar;
+    }
+
+    public void setUseGlobalVar(boolean useGlobalVar) {
+        this.useGlobalVar = useGlobalVar;
+    }
+
+    public boolean isHasSideEffect() {
+        return hasSideEffect;
+    }
+
+    public Set<GlobalVar> getStoreGVs() {
+        return storeGVs;
+    }
+
+    public Set<GlobalVar> getLoadGVs() {
+        return loadGVs;
     }
 
     public void refreshArgReg() {
