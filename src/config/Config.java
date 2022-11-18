@@ -18,6 +18,8 @@ public class Config {
     public static boolean chToStr = true;
     public static boolean addToMul = true;
     public static boolean DeadCodeElimination = true;
+    public static boolean GlobalVarLocalize = true;
+    public static boolean Mem2Reg = true;
 
     public static void init() {
         IOUtils.delete("output.txt");

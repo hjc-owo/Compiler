@@ -3,6 +3,8 @@ package pass;
 import config.Config;
 import ir.IRModule;
 import pass.ir.DeadCodeElimination;
+import pass.ir.GlobalVarLocalize;
+import pass.ir.Mem2Reg;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,15 @@ public class PassModule {
     public PassModule() {
         if (Config.DeadCodeElimination) {
             irPasses.add(new DeadCodeElimination());
+        }
+        if (Config.GlobalVarLocalize) {
+            irPasses.add(new GlobalVarLocalize());
+        }
+        if (Config.DeadCodeElimination) {
+            irPasses.add(new DeadCodeElimination());
+        }
+        if (Config.Mem2Reg) {
+            irPasses.add(new Mem2Reg());
         }
     }
 

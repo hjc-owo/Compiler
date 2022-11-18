@@ -55,6 +55,10 @@ public class Value {
         usesList.removeIf(use -> use.getUser() == user);
     }
 
+    public void removeFromUseList(Use use) {
+        usesList.remove(use);
+    }
+
     @Override
     public String toString() {
         return type.toString() + " " + name;
