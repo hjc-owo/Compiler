@@ -26,7 +26,6 @@ public class Config {
         IOUtils.delete("error.txt");
         IOUtils.delete("llvm_ir_raw.txt");
         IOUtils.delete("llvm_ir.txt");
-        IOUtils.delete("llvm_ir_op.txt");
         IOUtils.delete("mips.txt");
     }
 }

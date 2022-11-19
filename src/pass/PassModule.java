@@ -31,6 +31,9 @@ public class PassModule {
         if (Config.Mem2Reg) {
             irPasses.add(new Mem2Reg());
         }
+        if (Config.DeadCodeElimination) {
+            irPasses.add(new DeadCodeElimination());
+        }
     }
 
     public void runIRPasses() {

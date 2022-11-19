@@ -182,7 +182,7 @@ public class BuildFactory {
 
     public PhiInst buildPhi(BasicBlock basicBlock, Type type, List<Value> in) {
         PhiInst tmp = new PhiInst(basicBlock, type, in);
-        tmp.addInstToBlock(basicBlock);
+        tmp.addInstToBlockBegin(basicBlock);
         return tmp;
     }
 

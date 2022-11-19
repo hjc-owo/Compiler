@@ -73,4 +73,22 @@ public abstract class User extends Value {
         }
     }
 
+    // 把 operands 中的操作数替换成 value， 并更新 def-use 关系
+    public void replaceOperands(int indexOf, Value value) {
+        Value operand = operands.get(indexOf);
+        this.setOperands(indexOf, value);
+        if (operand != null && !this.operands.contains(value)) {
+            operand.removeUseByUser(this);
+        }
+    }
+
+    // 把oldOperand转换为newOperand
+    public void replaceOperands(Value oldValue, Value newValue) {
+        oldValue.removeUseByUser(this);
+        for (int i = 0; i < operands.size(); i++) {
+            if (operands.get(i) == oldValue) {
+                replaceOperands(i, newValue);
+            }
+        }
+    }
 }

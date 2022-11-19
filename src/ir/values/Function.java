@@ -6,10 +6,7 @@ import ir.types.Type;
 import utils.IList;
 import utils.INode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Function extends Value {
     private final IList<BasicBlock, Function> list;
@@ -23,6 +20,11 @@ public class Function extends Value {
     private boolean useGlobalVar = false;
     private final Set<GlobalVar> storeGVs = new HashSet<>();
     private final Set<GlobalVar> loadGVs = new HashSet<>();
+    // 函数内联
+    private boolean successorsNotAllLibrary = false;
+    private Map<BasicBlock, BasicBlock> idom = new HashMap<>();
+    private Map<BasicBlock, Set<BasicBlock>> dom = new HashMap<>();
+    private Map<BasicBlock, List<BasicBlock>> idoms = new HashMap<>();
 
     public Function(String name, Type type, boolean isLibraryFunction) {
         super(name, type);
@@ -97,6 +99,38 @@ public class Function extends Value {
 
     public Set<GlobalVar> getLoadGVs() {
         return loadGVs;
+    }
+
+    public boolean isSuccessorsNotAllLibrary() {
+        return successorsNotAllLibrary;
+    }
+
+    public void setSuccessorsNotAllLibrary(boolean successorsNotAllLibrary) {
+        this.successorsNotAllLibrary = successorsNotAllLibrary;
+    }
+
+    public Map<BasicBlock, BasicBlock> getIdom() {
+        return idom;
+    }
+
+    public void setIdom(Map<BasicBlock, BasicBlock> idom) {
+        this.idom = idom;
+    }
+
+    public Map<BasicBlock, Set<BasicBlock>> getDom() {
+        return dom;
+    }
+
+    public void setDom(Map<BasicBlock, Set<BasicBlock>> dom) {
+        this.dom = dom;
+    }
+
+    public Map<BasicBlock, List<BasicBlock>> getIdoms() {
+        return idoms;
+    }
+
+    public void setIdoms(Map<BasicBlock, List<BasicBlock>> idoms) {
+        this.idoms = idoms;
     }
 
     public void refreshArgReg() {

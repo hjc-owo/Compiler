@@ -21,6 +21,7 @@ public class BasicBlock extends Value {
     private INode<BasicBlock, Function> node; // 这个 BasicBlock 所属的 Function
     private List<BasicBlock> predecessors; // 这个 BasicBlock 的前驱 BasicBlock
     private List<BasicBlock> successors; // 这个 BasicBlock 的后继 BasicBlock
+    private int domLevel;
 
     public BasicBlock(Function function) {
         super(String.valueOf(REG_NUMBER++), new LabelType());
@@ -73,6 +74,14 @@ public class BasicBlock extends Value {
 
     public Function getParent() {
         return this.node.getParent().getValue();
+    }
+
+    public void setDomLevel(int domLevel) {
+        this.domLevel = domLevel;
+    }
+
+    public int getDomLevel() {
+        return domLevel;
     }
 
     public void refreshReg() {

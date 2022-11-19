@@ -21,10 +21,19 @@ public class PhiInst extends MemInst {
         StringBuilder s = new StringBuilder();
         s.append(getName()).append(" = phi ").append(getType()).append(" ");
         for (int i = 0; i < getOperands().size(); i++) {
-            if (i != 0) {
+            s.append("[ ")
+                    .append(getOperands().get(i).getName())
+                    .append(", %")
+                    .append(this.getNode()
+                            .getParent()
+                            .getValue()
+                            .getPredecessors()
+                            .get(i)
+                            .getName())
+                    .append(" ]");
+            if (i != getOperands().size() - 1) {
                 s.append(", ");
             }
-            s.append("[ ").append(getOperands().get(i).getName()).append(", %").append(getNode().getParent().getValue().getPredecessors().get(i).getName()).append(" ]");
         }
         return s.toString();
     }
