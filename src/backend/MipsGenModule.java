@@ -44,7 +44,7 @@ public class MipsGenModule {
                 IOUtils.mips(gv.getUniqueName() + ": .word " + ((ConstInt) gv.getValue()).getValue() + "\n");
             } else if (gv.isArray()) {
                 ConstArray constArray = (ConstArray) gv.getValue();
-                getGpArray(gv.getUniqueName(), 4 * constArray.getCapacity(), gv);
+                getGp(gv.getUniqueName(), gv);
                 PointerType pt = (PointerType) gv.getType();
                 IOUtils.mips(gv.getUniqueName() + ": ");
                 if (constArray.isInit()) {
@@ -61,6 +61,19 @@ public class MipsGenModule {
                 } else {
                     IOUtils.mips(".space " + ((ArrayType) pt.getTargetType()).getCapacity() * 4 + "\n");
                 }
+            }
+        }
+        for (INode<Function, IRModule> funcEntry : irModule.getFunctions()) {
+            Function function = funcEntry.getValue();
+            if (function.isLibraryFunction()) {
+                if (Objects.equals(function.getName(), "getint"))
+                    IOUtils.mips("\n.macro GETINT()\nli $v0, 5\nsyscall\n.end_macro\n");
+                else if (Objects.equals(function.getName(), "putint"))
+                    IOUtils.mips("\n.macro PUTINT()\nli $v0, 1\nsyscall\n.end_macro\n");
+                else if (Objects.equals(function.getName(), "putch"))
+                    IOUtils.mips("\n.macro PUTCH()\nli $v0, 11\nsyscall\n.end_macro\n");
+                else if (Objects.equals(function.getName(), "putstr"))
+                    IOUtils.mips("\n.macro PUTSTR()\nli $v0, 4\nsyscall\n.end_macro\n");
             }
         }
         IOUtils.mips("\n.text\n");
@@ -99,20 +112,13 @@ public class MipsGenModule {
 
 
     private Map<String, Triple<String, Integer, Value>> mem = new HashMap<>();
-    int gpOff = 0, spOff = 0, rec = 0;
+    int spOff = 0, rec = 0;
 
     private void getGp(String name, Value value) {
         if (mem.containsKey(name)) {
             return;
         }
-        mem.put(name, new Triple<>("$gp", gpOff, value));
-    }
-
-    private void getGpArray(String name, int offset, Value value) {
-        if (mem.containsKey(name)) {
-            return;
-        }
-        getGp(name, value);
+        mem.put(name, new Triple<>("$gp", 0, value));
     }
 
     private void getSp(String name, Value value) {
@@ -149,9 +155,21 @@ public class MipsGenModule {
     private void parseBinary(BinaryInst b) {
         if (b.isAdd()) calc(b, "addu");
         else if (b.isSub()) calc(b, "subu");
-        else if (b.isMul()) calc(b, "mul");
-        else if (b.isDiv()) calc(b, "div");
-        else if (b.isMod()) calc(b, "rem");
+        else if (b.isMul()) {
+            if (b.getOperand(0) instanceof ConstInt) {
+                optimizeMul(b.getOperand(1), (ConstInt) b.getOperand(0), b);
+            } else if (b.getOperand(1) instanceof ConstInt) {
+                optimizeMul(b.getOperand(0), (ConstInt) b.getOperand(1), b);
+            } else {
+                calc(b, "mul");
+            }
+        } else if (b.isDiv()) {
+            if (b.getOperand(1) instanceof ConstInt) {
+                optimizeDiv(b.getOperand(0), (ConstInt) b.getOperand(1), b);
+            } else {
+                calc(b, "div");
+            }
+        } else if (b.isMod()) calc(b, "rem");
         else if (b.isShl()) calc(b, "sll");
         else if (b.isShr()) calc(b, "srl");
         else if (b.isAnd()) calc(b, "and");
@@ -167,6 +185,97 @@ public class MipsGenModule {
             IOUtils.mips("not $t1, $t0\n");
             store("$t1", b.getUniqueName());
         }
+
+    }
+
+    private void optimizeMul(Value operand, ConstInt immValue, BinaryInst b) {
+        int imm = immValue.getValue();
+        if (imm == 0) {
+            load("$t0", "0");
+            store("$t0", b.getUniqueName());
+        } else if (imm == 1) {
+            load("$t0", operand.getUniqueName());
+            store("$t0", b.getUniqueName());
+        } else if (imm == 2) {
+            load("$t0", operand.getUniqueName());
+            IOUtils.mips("sll $t0, $t0, 1\n");
+            store("$t0", b.getUniqueName());
+        } else if (imm == -1) {
+            load("$t0", operand.getUniqueName());
+            IOUtils.mips("negu $t0, $t0\n");
+            store("$t0", b.getUniqueName());
+        } else if ((imm & (imm - 1)) == 0) {
+            load("$t0", operand.getUniqueName());
+            IOUtils.mips("sll $t0, $t0, " + (int) (Math.log(imm) / Math.log(2)) + "\n");
+            store("$t0", b.getUniqueName());
+        } else {
+            calc(b, "mul");
+        }
+    }
+
+    private void optimizeDiv(Value operand, ConstInt immValue, BinaryInst b) {
+        int imm = immValue.getValue();
+        if (imm == 1) {
+            load("$t0", operand.getUniqueName());
+            store("$t0", b.getUniqueName());
+        } else if (imm == -1) {
+            load("$t0", operand.getUniqueName());
+            IOUtils.mips("negu $t0, $t0\n");
+            store("$t0", b.getUniqueName());
+        } else {
+            int abs = imm > 0 ? imm : -imm;
+            load("$t0", operand.getUniqueName()); // n
+            if ((abs & (abs - 1)) == 0) {
+                // (n + ((n >> (31)) >>> (32 - l))) >> l
+                IOUtils.mips("sra $t1, $t0, 31\n"); // n >> 31
+                int l = getCTZ(abs);
+                IOUtils.mips("srl $t1, $t1, " + (32 - l) + "\n"); // (n >> 31) >>> (32 - l)
+                IOUtils.mips("addu $t0, $t0, $t1\n"); // n + ((n >> 31) >>> (32 - l))
+                IOUtils.mips("sra $t0, $t0, " + l + "\n"); // (n + ((n >> 31) >>> (32 - l))) >> l
+            } else {
+                Triple<Long, Integer, Integer> multiplier = chooseMultiplier(abs, 31);
+                long m = multiplier.getFirst();
+                int sh = multiplier.getSecond();
+                if (m < 2147483648L) {
+                    load("$t1", String.valueOf(m));
+                    IOUtils.mips("mult $t0, $t1\n");
+                    IOUtils.mips("mfhi $t2\n");
+                } else {
+                    load("$t1", String.valueOf((m - (1L << 32))));
+                    IOUtils.mips("mult $t0, $t1\n");
+                    IOUtils.mips("mfhi $t2\n");
+                    IOUtils.mips("addu $t2, $t2, $t0\n");
+                }
+                IOUtils.mips("sra $t2, $t2, " + sh + "\n");
+                IOUtils.mips("srl $t1, $t0, 31\n");
+                IOUtils.mips("addu $t0, $t2, $t1\n");
+            }
+            if (imm < 0) {
+                IOUtils.mips("negu $t0, $t0\n");
+            }
+            store("$t0", b.getUniqueName());
+        }
+    }
+
+    public int getCTZ(int num) {
+        int r = 0;
+        num >>>= 1;
+        while (num > 0) {
+            r++;
+            num >>>= 1;
+        }
+        return r; // 0 - 31
+    }
+
+    private Triple<Long, Integer, Integer> chooseMultiplier(int d, int prec) {
+        long nc = (1L << prec) - ((1L << prec) % d) - 1;
+        long p = 32;
+        while ((1L << p) <= nc * (d - (1L << p) % d)) {
+            p++;
+        }
+        long m = (((1L << p) + (long) d - (1L << p) % d) / (long) d);
+        long n = ((m << 32) >>> 32);
+        return new Triple<>(n, (int) (p - 32), 0);
     }
 
     private void calc(BinaryInst b, String op) {
@@ -180,20 +289,16 @@ public class MipsGenModule {
         Function function = callInst.getCalledFunction();
         if (function.isLibraryFunction()) {
             if (Objects.equals(function.getName(), "getint")) {
-                IOUtils.mips("li $v0, 5\n");
-                IOUtils.mips("syscall\n");
+                IOUtils.mips("GETINT()\n");
                 store("$v0", callInst.getUniqueName());
             } else if (Objects.equals(function.getName(), "putint")) {
                 load("$a0", callInst.getOperand(1).getUniqueName());
-                IOUtils.mips("li $v0, 1\n");
-                IOUtils.mips("syscall\n");
+                IOUtils.mips("PUTINT()\n");
             } else if (Objects.equals(function.getName(), "putch")) {
                 load("$a0", callInst.getOperand(1).getUniqueName());
-                IOUtils.mips("li $v0, 11\n");
-                IOUtils.mips("syscall\n");
+                IOUtils.mips("PUTCH()\n");
             } else if (Objects.equals(function.getName(), "putstr")) {
-                IOUtils.mips("li $v0, 4\n");
-                IOUtils.mips("syscall\n");
+                IOUtils.mips("PUTSTR()\n");
             }
         } else {
             store("$ra", "$sp", spOff - 4);
