@@ -5,6 +5,7 @@ import frontend.Lexer;
 import frontend.Parser;
 import ir.IRModule;
 import ir.LLVMGenerator;
+import pass.PassModule;
 import token.Token;
 import utils.IOUtils;
 
@@ -38,6 +39,8 @@ public class Compiler {
         if (Config.ir) {
             LLVMGenerator generator = new LLVMGenerator();
             generator.visitCompUnit(parser.getCompUnitNode());
+            IOUtils.llvm_ir_raw(IRModule.getInstance().toString());
+            PassModule.getInstance().runIRPasses();
             IOUtils.llvm_ir(IRModule.getInstance().toString());
         }
 

@@ -13,7 +13,7 @@ import ir.values.instructions.terminator.CallInst;
 import ir.values.instructions.terminator.RetInst;
 import utils.INode;
 import utils.IOUtils;
-import utils.Pair;
+import utils.Triple;
 
 import java.util.*;
 
@@ -34,42 +34,36 @@ public class MipsGenModule {
 
     public void genMips() {
         IOUtils.mips(".data\n");
-        for (GlobalVar globalVar : irModule.getGlobalVars()) {
-            if (globalVar.isString()) {
-                ConstString constString = (ConstString) globalVar.getValue();
-                IOUtils.mips("\n# " + globalVar + "\n\n");
-                IOUtils.mips(globalVar.getStringName() + ": .asciiz " + constString.getName() + "\n");
-            }
-        }
-        IOUtils.mips("\n.text\n");
-        for (GlobalVar globalVar : irModule.getGlobalVars()) {
-            if (!globalVar.isString()) {
-                IOUtils.mips("\n# " + globalVar + "\n\n");
-            }
-            if (globalVar.isInt()) {
-                getGp(globalVar.getUniqueName());
-                ConstInt constInt = (ConstInt) globalVar.getValue();
-                load("$t2", String.valueOf(constInt.getValue()));
-                store("$t2", globalVar.getUniqueName());
-            } else if (globalVar.isArray()) {
-                ConstArray constArray = (ConstArray) globalVar.getValue();
-                getGpArray(globalVar.getUniqueName(), 4 * constArray.getCapacity());
+        for (GlobalVar gv : irModule.getGlobalVars()) {
+            IOUtils.mips("\n# " + gv + "\n\n");
+            if (gv.isString()) {
+                ConstString constString = (ConstString) gv.getValue();
+                IOUtils.mips(gv.getUniqueName() + ": .asciiz " + constString.getName() + "\n");
+            } else if (gv.isInt()) {
+                getGp(gv.getUniqueName(), gv);
+                IOUtils.mips(gv.getUniqueName() + ": .word " + ((ConstInt) gv.getValue()).getValue() + "\n");
+            } else if (gv.isArray()) {
+                ConstArray constArray = (ConstArray) gv.getValue();
+                getGpArray(gv.getUniqueName(), 4 * constArray.getCapacity(), gv);
+                PointerType pt = (PointerType) gv.getType();
+                IOUtils.mips(gv.getUniqueName() + ": ");
                 if (constArray.isInit()) {
-                    List<Value> values = constArray.get1DArray();
-                    for (int i = 0; i < values.size(); i++) {
-                        Value value = values.get(i);
-                        if (value instanceof ConstInt) {
-                            ConstInt constInt = (ConstInt) value;
-                            IOUtils.mips("\n");
-                            load("$t2", String.valueOf(constInt.getValue()));
-                            load("$t0", globalVar.getUniqueName());
-                            IOUtils.mips("addu $t0, $t0, " + (4 * i) + "\n");
-                            store("$t2", "$t0", 0);
+                    IOUtils.mips(".word ");
+                    // 数组初值
+                    int capacity = ((ArrayType) pt.getTargetType()).getCapacity();
+                    for (int i = 0; i < capacity; i++) {
+                        IOUtils.mips(String.valueOf(((ConstInt) (constArray).get1DArray().get(i)).getValue()));
+                        if (i != capacity - 1) {
+                            IOUtils.mips(", ");
                         }
                     }
+                    IOUtils.mips("\n");
+                } else {
+                    IOUtils.mips(".space " + ((ArrayType) pt.getTargetType()).getCapacity() * 4 + "\n");
                 }
             }
         }
+        IOUtils.mips("\n.text\n");
         IOUtils.mips("\njal main\n");
         IOUtils.mips("li $v0, 10\n");
         IOUtils.mips("syscall\n\n");
@@ -84,7 +78,7 @@ public class MipsGenModule {
             for (int i = 0; rec > 0; i++) {
                 rec--;
                 load("$t0", "$sp", 4 * rec);
-                getSp(function.getArguments().get(i).getUniqueName());
+                getSp(function.getArguments().get(i).getUniqueName(), function.getArguments().get(i));
                 store("$t0", function.getArguments().get(i).getUniqueName());
             }
             rec = 0;
@@ -95,7 +89,7 @@ public class MipsGenModule {
                     Instruction ir = instEntry.getValue();
                     IOUtils.mips("\n# " + ir.toString() + "\n\n");
                     if (!(ir instanceof AllocaInst)) {
-                        getSp(ir.getUniqueName());
+                        getSp(ir.getUniqueName(), ir);
                     }
                     translate(ir);
                 }
@@ -104,40 +98,36 @@ public class MipsGenModule {
     }
 
 
-    private Map<String, Pair<String, Integer>> mem = new HashMap<>();
+    private Map<String, Triple<String, Integer, Value>> mem = new HashMap<>();
     int gpOff = 0, spOff = 0, rec = 0;
 
-    private void getGp(String name) {
+    private void getGp(String name, Value value) {
         if (mem.containsKey(name)) {
             return;
         }
-        mem.put(name, new Pair<>("$gp", gpOff));
-        gpOff += 4;
+        mem.put(name, new Triple<>("$gp", gpOff, value));
     }
 
-    private void getGpArray(String name, int offset) {
+    private void getGpArray(String name, int offset, Value value) {
         if (mem.containsKey(name)) {
             return;
         }
-        getGp(name);
-        IOUtils.mips("addu $t0, $gp, " + gpOff + "\n");
-        store("$t0", name);
-        gpOff += offset;
+        getGp(name, value);
     }
 
-    private void getSp(String name) {
+    private void getSp(String name, Value value) {
         if (mem.containsKey(name)) {
             return;
         }
         spOff -= 4;
-        mem.put(name, new Pair<>("$sp", spOff));
+        mem.put(name, new Triple<>("$sp", spOff, value));
     }
 
-    private void getSpArray(String name, int offset) {
+    private void getSpArray(String name, int offset, Value value) {
         if (mem.containsKey(name)) {
             return;
         }
-        getSp(name);
+        getSp(name, value);
         spOff -= offset;
         IOUtils.mips("addu $t0, $sp, " + spOff + "\n");
         store("$t0", name);
@@ -153,6 +143,7 @@ public class MipsGenModule {
         else if (ir instanceof GEPInst) parseGEP((GEPInst) ir);
         else if (ir instanceof BrInst) parseBr((BrInst) ir);
         else if (ir instanceof ConvInst) parseConv((ConvInst) ir);
+        // else if (ir instanceof PhiInst) parsePhi((PhiInst) ir);
     }
 
     private void parseBinary(BinaryInst b) {
@@ -234,16 +225,16 @@ public class MipsGenModule {
         if (allocaInst.getAllocaType() instanceof PointerType) {
             PointerType pointerType = (PointerType) allocaInst.getAllocaType();
             if (pointerType.getTargetType() instanceof IntegerType) {
-                getSp(allocaInst.getUniqueName());
+                getSp(allocaInst.getUniqueName(), allocaInst);
             } else if (pointerType.getTargetType() instanceof ArrayType) {
                 ArrayType arrayType = (ArrayType) pointerType.getTargetType();
-                getSpArray(allocaInst.getUniqueName(), 4 * arrayType.getCapacity());
+                getSpArray(allocaInst.getUniqueName(), 4 * arrayType.getCapacity(), allocaInst);
             }
         } else if (allocaInst.getAllocaType() instanceof IntegerType) {
-            getSp(allocaInst.getUniqueName());
+            getSp(allocaInst.getUniqueName(), allocaInst);
         } else if (allocaInst.getAllocaType() instanceof ArrayType) {
             ArrayType arrayType = (ArrayType) allocaInst.getAllocaType();
-            getSpArray(allocaInst.getUniqueName(), 4 * arrayType.getCapacity());
+            getSpArray(allocaInst.getUniqueName(), 4 * arrayType.getCapacity(), allocaInst);
         }
     }
 
@@ -272,7 +263,7 @@ public class MipsGenModule {
     private void parseGEP(GEPInst gepInst) {
         PointerType pt = (PointerType) gepInst.getPointer().getType();
         if (pt.isString()) {
-            IOUtils.mips("la $a0, " + gepInst.getPointer().getStringName() + "\n");
+            IOUtils.mips("la $a0, " + gepInst.getPointer().getGlobalName() + "\n");
             return;
         }
         int offsetNum;
@@ -284,8 +275,8 @@ public class MipsGenModule {
             offsetNum = 1;
             dims = new ArrayList<>();
         }
-        load("$t3", gepInst.getPointer().getUniqueName()); // arr
-        store("$t3", gepInst.getUniqueName());
+        load("$t2", gepInst.getPointer().getUniqueName()); // arr
+        store("$t2", gepInst.getUniqueName());
         int lastOff = 0;
         for (int i = 1; i <= offsetNum; i++) {
             int base = 4;
@@ -299,22 +290,20 @@ public class MipsGenModule {
                 lastOff += dimOff;
                 if (i == offsetNum) {
                     if (lastOff == 0) {
-                        store("$t3", gepInst.getUniqueName());
+                        store("$t2", gepInst.getUniqueName());
                     } else {
-                        IOUtils.mips("addu $t2, $t3, " + lastOff + "\n");
+                        IOUtils.mips("addu $t2, $t2, " + lastOff + "\n");
                         store("$t2", gepInst.getUniqueName());
                     }
                 }
             } else {
                 if (lastOff != 0) {
-                    IOUtils.mips("addu $t4, $t3, " + lastOff + "\n");
-                    IOUtils.mips("move $t3, $t4\n");
+                    IOUtils.mips("addu $t2, $t2, " + lastOff + "\n");
                 }
-                IOUtils.mips("li $t5, " + base + "\n");
-                load("$t6", gepInst.getOperand(i).getUniqueName()); // offset
-                IOUtils.mips("mul $t6, $t6, $t5\n");
-                IOUtils.mips("addu $t3, $t3, $t6\n");
-                store("$t3", gepInst.getUniqueName());
+                load("$t1", gepInst.getOperand(i).getUniqueName()); // offset
+                IOUtils.mips("mul $t1, $t1, " + base + "\n");
+                IOUtils.mips("addu $t2, $t2, $t1\n");
+                store("$t2", gepInst.getUniqueName());
             }
             IOUtils.mips("\n");
         }
@@ -345,6 +334,11 @@ public class MipsGenModule {
     private void load(String reg, String name) {
         if (isNumber(name)) {
             IOUtils.mips("li " + reg + ", " + name + "\n");
+        } else if (mem.get(name).getThird() instanceof GlobalVar) {
+            IOUtils.mips("la " + reg + ", " + name + "\n");
+            if (((GlobalVar) mem.get(name).getThird()).isInt()) {
+                IOUtils.mips("lw " + reg + ", 0(" + reg + ")\n");
+            }
         } else {
             IOUtils.mips("lw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
         }
@@ -355,7 +349,14 @@ public class MipsGenModule {
     }
 
     private void store(String reg, String name) {
-        IOUtils.mips("sw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
+        if (mem.get(name).getThird() instanceof GlobalVar) {
+            IOUtils.mips("la $t1, " + name + "\n");
+            if (((GlobalVar) mem.get(name).getThird()).isInt()) {
+                IOUtils.mips("sw " + reg + ", 0($t1)\n");
+            }
+        } else {
+            IOUtils.mips("sw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
+        }
     }
 
     private void store(String reg, String name, int offset) {

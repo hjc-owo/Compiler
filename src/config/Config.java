@@ -12,6 +12,7 @@ public class Config {
     public static String fileInPath = "testfile.txt";
     public static String fileOutPath = "output.txt";
     public static String fileErrorPath = "error.txt";
+    public static String fileLlvmIRRawPath = "llvm_ir_raw.txt";
     public static String fileLlvmIRPath = "llvm_ir.txt";
     public static String fileMipsPath = "mips.txt";
     public static String stdOutPath = "stdout.txt";
@@ -29,10 +30,16 @@ public class Config {
      */
     public static boolean chToStr = true;
     public static boolean addToMul = true;
+    public static boolean DeadCodeElimination = true;
+    public static boolean GlobalVarLocalize = false;
+    public static boolean Mem2Reg = false;
+    public static boolean FunctionInline = false;
+    public static boolean BranchOptimization = true;
 
     public static void init() throws IOException {
         IOUtils.delete(fileOutPath);
         IOUtils.delete(fileErrorPath);
+        IOUtils.delete(fileLlvmIRRawPath);
         IOUtils.delete(fileLlvmIRPath);
         IOUtils.delete(fileMipsPath);
         System.setOut(new PrintStream(stdOutPath));

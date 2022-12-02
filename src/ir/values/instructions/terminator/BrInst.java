@@ -44,6 +44,10 @@ public class BrInst extends TerminatorInst {
         }
     }
 
+    public Value getTarget() {
+        return this.getOperand(0);
+    }
+
     public boolean isCondBr() {
         return this.getOperands().size() == 3;
     }

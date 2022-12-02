@@ -29,10 +29,6 @@ public class Value {
         return name;
     }
 
-    public String getStringName() {
-        return name.replaceAll("@", "");
-    }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -71,15 +67,24 @@ public class Value {
 
     public String getUniqueName() {
         if (isNumber()) return getName();
+        if (isGlobal()) return getGlobalName();
         return getName() + "_" + getId();
     }
 
+    public String getGlobalName() {
+        return name.replaceAll("@", "");
+    }
+
     public boolean isNumber() {
-        return name.matches("-?[0-9]+");
+        return this instanceof ConstInt;
     }
 
     public int getNumber() {
         return Integer.parseInt(name);
+    }
+
+    public boolean isGlobal() {
+        return name.startsWith("@");
     }
 
     @Override

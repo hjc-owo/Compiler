@@ -41,6 +41,10 @@ public class IOUtils {
         write(message, Config.fileErrorPath);
     }
 
+    public static void llvm_ir_raw(String content) {
+        write(content, Config.fileLlvmIRRawPath);
+    }
+
     public static void llvm_ir(String message) {
         write(message, Config.fileLlvmIRPath);
     }

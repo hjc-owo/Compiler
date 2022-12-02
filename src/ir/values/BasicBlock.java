@@ -15,6 +15,7 @@ import utils.INode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class BasicBlock extends Value {
     private IList<Instruction, BasicBlock> instructions; // 这个 BasicBlock 中的指令列表
@@ -148,5 +149,17 @@ public class BasicBlock extends Value {
 
             instNode = ninstNode;
         }
+    }
+
+    public void copyAllFrom(BasicBlock source, Map<Value, Value> replaceMap) {
+        for (INode<Instruction, BasicBlock> instNode : source.getInstructions()) {
+            Instruction instruction = instNode.getValue();
+            Instruction insertInst = instruction.copySelf(replaceMap);
+            replaceMap.put(instruction, insertInst);
+        }
+    }
+
+    public int getLoopDepth() {
+        return node.getParent().getValue().getLoopInfo().getLoopDepth(this);
     }
 }
