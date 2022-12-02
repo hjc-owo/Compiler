@@ -154,9 +154,30 @@ public class MipsGenModule {
     }
 
     private void parseBinary(BinaryInst b) {
-        if (b.isAdd()) calc(b, "addu");
-        else if (b.isSub()) calc(b, "subu");
-        else if (b.isMul()) {
+        if (b.isAdd()) {
+            if (b.getOperand(0) instanceof ConstInt) {
+                int imm = ((ConstInt) b.getOperand(0)).getValue();
+                load("$t0", b.getOperand(1).getUniqueName());
+                IOUtils.mips("addu $t0, $t0, " + imm + "\n");
+                store("$t0", b.getUniqueName());
+            } else if (b.getOperand(1) instanceof ConstInt) {
+                int imm = ((ConstInt) b.getOperand(1)).getValue();
+                load("$t0", b.getOperand(0).getUniqueName());
+                IOUtils.mips("addu $t0, $t0, " + imm + "\n");
+                store("$t0", b.getUniqueName());
+            } else {
+                calc(b, "addu");
+            }
+        } else if (b.isSub()) {
+            if (b.getOperand(1) instanceof ConstInt) {
+                int imm = ((ConstInt) b.getOperand(1)).getValue();
+                load("$t0", b.getOperand(0).getUniqueName());
+                IOUtils.mips("subu $t0, $t0, " + imm + "\n");
+                store("$t0", b.getUniqueName());
+            } else {
+                calc(b, "subu");
+            }
+        } else if (b.isMul()) {
             if (!Config.MulAndDivOptimization) {
                 calc(b, "mul");
                 return;
@@ -168,29 +189,29 @@ public class MipsGenModule {
             int leftAbs = leftValue >= 0 ? leftValue : -leftValue;
             int rightAbs = rightValue >= 0 ? rightValue : -rightValue;
             if (isLeftConst && leftValue == 0) {
-                optimizeMul(right, (ConstInt) left, b);
+                optimizeMul(right, (ConstInt) left, b, false);
             } else if (isRightConst && rightValue == 0) {
-                optimizeMul(left, (ConstInt) right, b);
+                optimizeMul(left, (ConstInt) right, b, false);
             } else if (isLeftConst && leftValue == 1) {
-                optimizeMul(right, (ConstInt) left, b);
+                optimizeMul(right, (ConstInt) left, b, false);
             } else if (isRightConst && rightValue == 1) {
-                optimizeMul(left, (ConstInt) right, b);
+                optimizeMul(left, (ConstInt) right, b, false);
             } else if (isLeftConst && leftValue == -1) {
-                optimizeMul(right, (ConstInt) left, b);
+                optimizeMul(right, (ConstInt) left, b, false);
             } else if (isRightConst && rightValue == -1) {
-                optimizeMul(left, (ConstInt) right, b);
+                optimizeMul(left, (ConstInt) right, b, false);
             } else if (isLeftConst && (leftAbs & (leftAbs - 1)) == 0) {
-                optimizeMul(right, (ConstInt) left, b);
+                optimizeMul(right, (ConstInt) left, b, false);
             } else if (isRightConst && (rightAbs & (rightAbs - 1)) == 0) {
-                optimizeMul(left, (ConstInt) right, b);
+                optimizeMul(left, (ConstInt) right, b, false);
             } else if (isLeftConst && ((leftAbs - 1) & (leftAbs - 2)) == 0) {
-                optimizeMul(right, (ConstInt) left, b);
+                optimizeMul(right, (ConstInt) left, b, false);
             } else if (isRightConst && ((rightAbs - 1) & (rightAbs - 2)) == 0) {
-                optimizeMul(left, (ConstInt) right, b);
+                optimizeMul(left, (ConstInt) right, b, false);
             } else if (isLeftConst && ((leftAbs + 1) & leftAbs) == 0) {
-                optimizeMul(right, (ConstInt) left, b);
+                optimizeMul(right, (ConstInt) left, b, false);
             } else if (isRightConst && ((rightAbs + 1) & rightAbs) == 0) {
-                optimizeMul(left, (ConstInt) right, b);
+                optimizeMul(left, (ConstInt) right, b, false);
             } else {
                 calc(b, "mul");
             }
@@ -200,12 +221,21 @@ public class MipsGenModule {
                 return;
             }
             if (b.getOperand(1) instanceof ConstInt) {
-                optimizeDiv(b.getOperand(0), (ConstInt) b.getOperand(1), b);
+                optimizeDiv(b.getOperand(0), ((ConstInt) b.getOperand(1)), b, false);
             } else {
                 calc(b, "div");
             }
-        } else if (b.isMod()) calc(b, "rem");
-        else if (b.isShl()) calc(b, "sll");
+        } else if (b.isMod()) {
+            if (!Config.MulAndDivOptimization) {
+                calc(b, "rem");
+                return;
+            }
+            if (b.getOperand(1) instanceof ConstInt) {
+                optimizeMod(b.getOperand(0), (ConstInt) b.getOperand(1), b);
+            } else {
+                calc(b, "rem");
+            }
+        } else if (b.isShl()) calc(b, "sll");
         else if (b.isShr()) calc(b, "srl");
         else if (b.isAnd()) calc(b, "and");
         else if (b.isOr()) calc(b, "or");
@@ -223,57 +253,50 @@ public class MipsGenModule {
 
     }
 
-    private void optimizeMul(Value operand, ConstInt immValue, BinaryInst b) {
+    private void optimizeMul(Value operand, ConstInt immValue, BinaryInst b, boolean isMod) {
         int imm = immValue.getValue();
         int abs = imm >= 0 ? imm : -imm;
         if (imm == 0) {
             load("$t0", "0");
-            store("$t0", b.getUniqueName());
-        } else if (imm == 1) {
-            load("$t0", operand.getUniqueName());
-            store("$t0", b.getUniqueName());
-        } else if (imm == -1) {
-            load("$t0", operand.getUniqueName());
-            IOUtils.mips("negu $t0, $t0\n");
-            store("$t0", b.getUniqueName());
-        } else if ((abs & (abs - 1)) == 0) {
-            load("$t0", operand.getUniqueName());
-            IOUtils.mips("sll $t0, $t0, " + getCTZ(abs) + "\n");
-            if (imm <= 0) {
-                IOUtils.mips("negu $t0, $t0\n");
-            }
-            store("$t0", b.getUniqueName());
-        } else if (((abs - 1) & (abs - 2)) == 0) {
-            load("$t0", operand.getUniqueName());
-            IOUtils.mips("sll $t1, $t0, " + getCTZ(abs) + "\n");
-            IOUtils.mips("addu $t0, $t0, $t1\n");
-            if (imm <= 0) {
-                IOUtils.mips("negu $t0, $t0\n");
-            }
-            store("$t0", b.getUniqueName());
-        } else if (((abs + 1) & abs) == 0) {
-            load("$t0", operand.getUniqueName());
-            IOUtils.mips("sll $t1, $t0, " + (getCTZ(abs) + 1) + "\n");
-            if (imm > 0) {
-                IOUtils.mips("subu $t0, $t1, $t0\n");
-            } else {
-                IOUtils.mips("subu $t0, $t0, $t1\n");
-            }
-            store("$t0", b.getUniqueName());
         } else {
-            calc(b, "mul");
+            if (!isMod) {
+                load("$t0", operand.getUniqueName());
+            }
+            if (imm == 1) {
+            } else if (imm == -1) {
+                IOUtils.mips("negu $t0, $t0\n");
+            } else if ((abs & (abs - 1)) == 0) {
+                IOUtils.mips("sll $t0, $t0, " + getCTZ(abs) + "\n");
+                if (imm <= 0) {
+                    IOUtils.mips("negu $t0, $t0\n");
+                }
+            } else if (((abs - 1) & (abs - 2)) == 0) {
+                IOUtils.mips("sll $t1, $t0, " + getCTZ(abs) + "\n");
+                IOUtils.mips("addu $t0, $t0, $t1\n");
+                if (imm <= 0) {
+                    IOUtils.mips("negu $t0, $t0\n");
+                }
+            } else if (((abs + 1) & abs) == 0) {
+                IOUtils.mips("sll $t1, $t0, " + (getCTZ(abs) + 1) + "\n");
+                if (imm > 0) {
+                    IOUtils.mips("subu $t0, $t1, $t0\n");
+                } else {
+                    IOUtils.mips("subu $t0, $t0, $t1\n");
+                }
+            } else {
+                IOUtils.mips("mul $t0, $t0, " + imm + "\n");
+            }
         }
+        store("$t0", b.getUniqueName());
     }
 
-    private void optimizeDiv(Value operand, ConstInt immValue, BinaryInst b) {
+    private void optimizeDiv(Value operand, ConstInt immValue, BinaryInst b, boolean isMod) {
         int imm = immValue.getValue();
         if (imm == 1) {
             load("$t0", operand.getUniqueName());
-            store("$t0", b.getUniqueName());
         } else if (imm == -1) {
             load("$t0", operand.getUniqueName());
             IOUtils.mips("negu $t0, $t0\n");
-            store("$t0", b.getUniqueName());
         } else {
             int abs = imm >= 0 ? imm : -imm;
             load("$t0", operand.getUniqueName()); // n
@@ -305,6 +328,24 @@ public class MipsGenModule {
             if (imm < 0) {
                 IOUtils.mips("negu $t0, $t0\n");
             }
+        }
+        if (!isMod) {
+            store("$t0", b.getUniqueName());
+        }
+    }
+
+    private void optimizeMod(Value operand, ConstInt immValue, BinaryInst b) {
+        int imm = immValue.getValue();
+        if (imm == 1 || imm == -1) {
+            load("$t0", "0");
+            store("$t0", b.getUniqueName());
+        } else {
+            optimizeDiv(operand, immValue, b, true);
+            IOUtils.mips("\n");
+            optimizeMul(b, immValue, b, true);
+            IOUtils.mips("\n");
+            load("$t1", operand.getUniqueName());
+            IOUtils.mips("subu $t0, $t1, $t0\n");
             store("$t0", b.getUniqueName());
         }
     }
@@ -333,8 +374,8 @@ public class MipsGenModule {
     private void calc(BinaryInst b, String op) {
         load("$t0", b.getOperand(0).getUniqueName());
         load("$t1", b.getOperand(1).getUniqueName());
-        IOUtils.mips(op + " $t2, $t0, $t1\n");
-        store("$t2", b.getUniqueName());
+        IOUtils.mips(op + " $t0, $t0, $t1\n");
+        store("$t0", b.getUniqueName());
     }
 
     private void parseCall(CallInst callInst) {
