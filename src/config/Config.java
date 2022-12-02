@@ -35,6 +35,7 @@ public class Config {
     public static boolean Mem2Reg = false;
     public static boolean FunctionInline = false;
     public static boolean BranchOptimization = true;
+    public static boolean MulAndDivOptimization = true;
 
     public static void init() throws IOException {
         IOUtils.delete(fileOutPath);
