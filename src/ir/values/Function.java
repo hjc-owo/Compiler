@@ -6,7 +6,8 @@ import ir.types.Type;
 import utils.IList;
 import utils.INode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Function extends Value {
     private final IList<BasicBlock, Function> list;
@@ -15,16 +16,6 @@ public class Function extends Value {
     private final List<Function> predecessors;
     private final List<Function> successors;
     private final boolean isLibraryFunction;
-    // 过程间分析
-    private boolean hasSideEffect = false;
-    private boolean useGlobalVar = false;
-    private final Set<GlobalVar> storeGVs = new HashSet<>();
-    private final Set<GlobalVar> loadGVs = new HashSet<>();
-    // 函数内联
-    private boolean successorsNotAllLibrary = false;
-    private Map<BasicBlock, BasicBlock> idom = new HashMap<>();
-    private Map<BasicBlock, Set<BasicBlock>> dom = new HashMap<>();
-    private Map<BasicBlock, List<BasicBlock>> idoms = new HashMap<>();
 
     public Function(String name, Type type, boolean isLibraryFunction) {
         super(name, type);
@@ -71,66 +62,6 @@ public class Function extends Value {
 
     public boolean isLibraryFunction() {
         return isLibraryFunction;
-    }
-
-    public boolean hasSideEffect() {
-        return hasSideEffect || isLibraryFunction;
-    }
-
-    public void setHasSideEffect(boolean hasSideEffect) {
-        this.hasSideEffect = hasSideEffect;
-    }
-
-    public boolean isUseGlobalVar() {
-        return useGlobalVar;
-    }
-
-    public void setUseGlobalVar(boolean useGlobalVar) {
-        this.useGlobalVar = useGlobalVar;
-    }
-
-    public boolean isHasSideEffect() {
-        return hasSideEffect;
-    }
-
-    public Set<GlobalVar> getStoreGVs() {
-        return storeGVs;
-    }
-
-    public Set<GlobalVar> getLoadGVs() {
-        return loadGVs;
-    }
-
-    public boolean isSuccessorsNotAllLibrary() {
-        return successorsNotAllLibrary;
-    }
-
-    public void setSuccessorsNotAllLibrary(boolean successorsNotAllLibrary) {
-        this.successorsNotAllLibrary = successorsNotAllLibrary;
-    }
-
-    public Map<BasicBlock, BasicBlock> getIdom() {
-        return idom;
-    }
-
-    public void setIdom(Map<BasicBlock, BasicBlock> idom) {
-        this.idom = idom;
-    }
-
-    public Map<BasicBlock, Set<BasicBlock>> getDom() {
-        return dom;
-    }
-
-    public void setDom(Map<BasicBlock, Set<BasicBlock>> dom) {
-        this.dom = dom;
-    }
-
-    public Map<BasicBlock, List<BasicBlock>> getIdoms() {
-        return idoms;
-    }
-
-    public void setIdoms(Map<BasicBlock, List<BasicBlock>> idoms) {
-        this.idoms = idoms;
     }
 
     public void refreshArgReg() {

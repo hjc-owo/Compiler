@@ -18,6 +18,10 @@ public abstract class User extends Value {
         return operands;
     }
 
+    public Value getOperand(int index) {
+        return operands.get(index);
+    }
+
     public void setOperands(List<Value> operands) {
         this.operands = operands;
     }

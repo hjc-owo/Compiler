@@ -94,11 +94,15 @@ public class BasicBlock extends Value {
         }
     }
 
+    public String getLabelName() {
+        return "label_" + getId();
+    }
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
         for (INode<Instruction, BasicBlock> instruction : this.instructions) {
-            s.append("    ").append(instruction.getValue().toString()).append("\n");
+            s.append("\t").append(instruction.getValue().toString()).append("\n");
         }
         return s.toString();
     }

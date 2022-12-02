@@ -15,6 +15,10 @@ public class RetInst extends TerminatorInst {
         this.addOperand(ret);
     }
 
+    public boolean isVoid() {
+        return this.getOperands().isEmpty();
+    }
+
     @Override
     public String toString() {
         if (getOperands().size() == 1) {

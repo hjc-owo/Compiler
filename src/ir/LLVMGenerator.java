@@ -3,6 +3,7 @@ package ir;
 import config.Config;
 import ir.types.*;
 import ir.values.*;
+import ir.values.instructions.ConstArray;
 import ir.values.instructions.Operator;
 import node.*;
 import token.TokenType;
@@ -231,6 +232,7 @@ public class LLVMGenerator {
             }
             if (isGlobal) {
                 tmpValue = buildFactory.buildGlobalArray(name, type, true);
+                ((ConstArray) ((GlobalVar) tmpValue).getValue()).setInit(true);
             } else {
                 tmpValue = buildFactory.buildArray(curBlock, true, type);
             }
@@ -340,6 +342,9 @@ public class LLVMGenerator {
             }
             if (isGlobal) {
                 tmpValue = buildFactory.buildGlobalArray(name, type, false);
+                if (varDefNode.getInitValNode() != null) {
+                    ((ConstArray) ((GlobalVar) tmpValue).getValue()).setInit(true);
+                }
             } else {
                 tmpValue = buildFactory.buildArray(curBlock, false, type);
             }

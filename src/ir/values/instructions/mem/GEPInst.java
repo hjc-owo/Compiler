@@ -1,14 +1,15 @@
 package ir.values.instructions.mem;
 
 import ir.types.ArrayType;
-import ir.types.IntegerType;
 import ir.types.PointerType;
 import ir.types.Type;
 import ir.values.BasicBlock;
+import ir.values.ConstInt;
 import ir.values.GlobalVar;
 import ir.values.Value;
 import ir.values.instructions.Operator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GEPInst extends MemInst {
@@ -54,15 +55,20 @@ public class GEPInst extends MemInst {
         return type;
     }
 
+    public List<Integer> getGEPIndex() {
+        List<Integer> index = new ArrayList<>();
+        for (int i = 1; i < getOperands().size(); i++) {
+            index.add(((ConstInt) getOperand(i)).getValue());
+        }
+        return index;
+    }
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append(getName()).append(" = getelementptr ");
         // 如果是字符串，需要加 inbounds
-        if (getPointer().getType() instanceof PointerType &&
-                ((PointerType) getPointer().getType()).getTargetType() instanceof ArrayType &&
-                ((ArrayType) ((PointerType) getPointer().getType()).getTargetType()).getElementType() instanceof IntegerType &&
-                ((IntegerType) ((ArrayType) ((PointerType) getPointer().getType()).getTargetType()).getElementType()).isI8()) {
+        if (getPointer().getType() instanceof PointerType && ((PointerType) getPointer().getType()).isString()) {
             s.append("inbounds ");
         }
         s.append(((PointerType) getPointer().getType()).getTargetType()).append(", ");

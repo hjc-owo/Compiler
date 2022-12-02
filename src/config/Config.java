@@ -2,7 +2,19 @@ package config;
 
 import utils.IOUtils;
 
+import java.io.IOException;
+import java.io.PrintStream;
+
 public class Config {
+    /**
+     * The path of files.
+     */
+    public static String fileInPath = "testfile.txt";
+    public static String fileOutPath = "output.txt";
+    public static String fileErrorPath = "error.txt";
+    public static String fileLlvmIRPath = "llvm_ir.txt";
+    public static String fileMipsPath = "mips.txt";
+    public static String stdOutPath = "stdout.txt";
     /**
      * stages of compilation
      */
@@ -17,15 +29,12 @@ public class Config {
      */
     public static boolean chToStr = true;
     public static boolean addToMul = true;
-    public static boolean DeadCodeElimination = true;
-    public static boolean GlobalVarLocalize = true;
-    public static boolean Mem2Reg = true;
 
-    public static void init() {
-        IOUtils.delete("output.txt");
-        IOUtils.delete("error.txt");
-        IOUtils.delete("llvm_ir_raw.txt");
-        IOUtils.delete("llvm_ir.txt");
-        IOUtils.delete("mips.txt");
+    public static void init() throws IOException {
+        IOUtils.delete(fileOutPath);
+        IOUtils.delete(fileErrorPath);
+        IOUtils.delete(fileLlvmIRPath);
+        IOUtils.delete(fileMipsPath);
+        System.setOut(new PrintStream(stdOutPath));
     }
 }

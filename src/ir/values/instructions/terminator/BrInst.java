@@ -44,6 +44,34 @@ public class BrInst extends TerminatorInst {
         }
     }
 
+    public boolean isCondBr() {
+        return this.getOperands().size() == 3;
+    }
+
+    public Value getCond() {
+        if (isCondBr()) {
+            return this.getOperand(0);
+        } else {
+            return null;
+        }
+    }
+
+    public BasicBlock getTrueLabel() {
+        if (isCondBr()) {
+            return (BasicBlock) this.getOperand(1);
+        } else {
+            return (BasicBlock) this.getOperand(0);
+        }
+    }
+
+    public BasicBlock getFalseLabel() {
+        if (isCondBr()) {
+            return (BasicBlock) this.getOperand(2);
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public String toString() {
         if (this.getOperands().size() == 1) {
