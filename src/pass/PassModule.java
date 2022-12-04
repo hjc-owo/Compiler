@@ -32,14 +32,38 @@ public class PassModule {
         if (Config.DeadCodeElimination) {
             irPasses.add(new DeadCodeElimination());
         }
+        if (Config.GVNGCM) {
+            irPasses.add(new GVNGCM());
+        }
+        if (Config.DeadCodeElimination) {
+            irPasses.add(new DeadCodeElimination());
+        }
         if (Config.FunctionInline) {
             irPasses.add(new FunctionInline());
         }
         if (Config.DeadCodeElimination) {
             irPasses.add(new DeadCodeElimination());
         }
+        if (Config.MarkConstArray) {
+            irPasses.add(new MarkConstArray());
+        }
+        if (Config.DeadCodeElimination) {
+            irPasses.add(new DeadCodeElimination());
+        }
         if (Config.BranchOptimization) {
             irPasses.add(new BranchOptimization());
+        }
+        if (Config.DeadCodeElimination) {
+            irPasses.add(new DeadCodeElimination());
+        }
+        if (Config.LCSSA) {
+            irPasses.add(new LCSSA());
+            if (Config.RemoveUnUseLoop) {
+                irPasses.add(new RemoveUnUseLoop());
+                if (Config.GVNGCM) {
+                    irPasses.add(new GVNGCM());
+                }
+            }
         }
         if (Config.DeadCodeElimination) {
             irPasses.add(new DeadCodeElimination());

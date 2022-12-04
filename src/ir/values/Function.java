@@ -196,6 +196,10 @@ public class Function extends Value {
         loopInfo.computeLoopInfo(this);
     }
 
+    public void computeLoopInfo() {
+        loopInfo.run();
+    }
+
     public void refreshArgReg() {
         for (Argument arg : arguments) {
             arg.setName("%" + REG_NUMBER++);

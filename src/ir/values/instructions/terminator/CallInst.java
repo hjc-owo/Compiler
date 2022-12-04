@@ -1,9 +1,6 @@
 package ir.values.instructions.terminator;
 
-import ir.types.FunctionType;
-import ir.types.IntegerType;
-import ir.types.Type;
-import ir.types.VoidType;
+import ir.types.*;
 import ir.values.BasicBlock;
 import ir.values.BuildFactory;
 import ir.values.Function;
@@ -52,6 +49,16 @@ public class CallInst extends TerminatorInst {
 
     public Function getCalledFunction() {
         return (Function) this.getOperands().get(0);
+    }
+
+    public boolean isPure() {
+        Function func = (Function) getOperands().get(0);
+        for (Value value : getOperands()) {
+            if (value.getType() instanceof PointerType) {
+                return false;
+            }
+        }
+        return !func.hasSideEffect() && !func.isUseGlobalVar();
     }
 
     @Override

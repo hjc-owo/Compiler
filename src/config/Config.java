@@ -34,8 +34,13 @@ public class Config {
     public static boolean DeadCodeElimination = true;
     public static boolean GlobalVarLocalize = false;
     public static boolean Mem2Reg = false;
+    public static boolean GVNGCM = false;
     public static boolean FunctionInline = false;
+    public static boolean MarkConstArray = true;
     public static boolean BranchOptimization = true;
+    public static boolean LCSSA = true;
+    public static boolean RemoveUnUseLoop = true;
+
     public static boolean MulAndDivOptimization = true;
 
     public static void init() throws IOException {

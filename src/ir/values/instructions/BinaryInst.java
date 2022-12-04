@@ -2,9 +2,7 @@ package ir.values.instructions;
 
 import ir.types.IntegerType;
 import ir.types.VoidType;
-import ir.values.BasicBlock;
-import ir.values.BuildFactory;
-import ir.values.Value;
+import ir.values.*;
 
 public class BinaryInst extends Instruction {
 
@@ -101,6 +99,78 @@ public class BinaryInst extends Instruction {
     public boolean isNot() {
         return this.getOperator() == Operator.Not;
     }
+
+    public boolean canReverse(Operator operator1, Operator operator2) {
+        Operator operator = reverse(operator1);
+        if (operator == null) {
+            return false;
+        }
+        return operator == operator2;
+    }
+
+    public Operator reverse(Operator operator) {
+        Operator ans = null;
+        switch (operator) {
+            case Le:
+                ans = Operator.Gt;
+                break;
+            case Lt:
+                ans = Operator.Ge;
+                break;
+            case Ge:
+                ans = Operator.Lt;
+                break;
+            case Gt:
+                ans = Operator.Le;
+                break;
+            case Eq:
+                ans = Operator.Eq;
+                break;
+            case Ne:
+                ans = Operator.Ne;
+                break;
+        }
+        return ans;
+    }
+
+    // 针对ConstantInt和ConstantFloat的化简
+    // 无法化简返回True，能够化简返回值
+    public static Value simplifyConstant(Operator operator, Const left, Const right) {
+        boolean isAllConstantInt = left instanceof ConstInt && right instanceof ConstInt;
+        if (isAllConstantInt) {
+            int l = ((ConstInt) left).getValue();
+            int r = ((ConstInt) right).getValue();
+            switch (operator) {
+                case Add:
+                    return new ConstInt(l + r);
+                case Sub:
+                    return new ConstInt(l - r);
+                case Mul:
+                    return new ConstInt(l * r);
+                case Div:
+                    return new ConstInt(l / r);
+                case Mod:
+                    return new ConstInt(l % r);
+                case Le:
+                    return new ConstInt(l <= r ? 1 : 0, true);
+                case Lt:
+                    return new ConstInt(l < r ? 1 : 0, true);
+                case Ge:
+                    return new ConstInt(l >= r ? 1 : 0, true);
+                case Gt:
+                    return new ConstInt(l > r ? 1 : 0, true);
+                case Eq:
+                    return new ConstInt(l == r ? 1 : 0, true);
+                case Ne:
+                    return new ConstInt(l != r ? 1 : 0, true);
+                default:
+                    return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
 
     @Override
     public String toString() {
