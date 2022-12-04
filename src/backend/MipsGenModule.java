@@ -266,7 +266,9 @@ public class MipsGenModule {
                 IOUtils.mips("mul $t0, $t0, " + imm + "\n");
             }
         }
-        store("$t0", b.getUniqueName());
+        if (!isMod) {
+            store("$t0", b.getUniqueName());
+        }
     }
 
     private void optimizeDiv(Value operand, ConstInt immValue, BinaryInst b, boolean isMod) {
@@ -317,7 +319,6 @@ public class MipsGenModule {
         int imm = immValue.getValue();
         if (imm == 1 || imm == -1) {
             load("$t0", "0");
-            store("$t0", b.getUniqueName());
         } else {
             optimizeDiv(operand, immValue, b, true);
             IOUtils.mips("\n");
@@ -325,8 +326,8 @@ public class MipsGenModule {
             IOUtils.mips("\n");
             load("$t1", operand.getUniqueName());
             IOUtils.mips("subu $t0, $t1, $t0\n");
-            store("$t0", b.getUniqueName());
         }
+        store("$t0", b.getUniqueName());
     }
 
     public int getCTZ(int num) {
@@ -348,12 +349,6 @@ public class MipsGenModule {
         long m = (((1L << p) + (long) d - (1L << p) % d) / (long) d);
         long n = ((m << 32) >>> 32);
         return new Triple<>(n, (int) (p - 32), 0);
-    }
-
-    private void calc0(BinaryInst b, String op) {
-        load("$t0", b.getOperand(1).getUniqueName());
-        IOUtils.mips(op + " $t0, $t0, " + ((ConstInt) b.getOperand(0)).getValue() + "\n");
-        store("$t0", b.getUniqueName());
     }
 
     private void calc(BinaryInst b, String op, int type) {

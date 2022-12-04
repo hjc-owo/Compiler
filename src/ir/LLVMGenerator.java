@@ -11,6 +11,12 @@ import token.TokenType;
 import java.util.*;
 
 public class LLVMGenerator {
+    private static final LLVMGenerator instance = new LLVMGenerator();
+
+    public static LLVMGenerator getInstance() {
+        return instance;
+    }
+
     private BuildFactory buildFactory = BuildFactory.getInstance();
 
     private BasicBlock curBlock = null;

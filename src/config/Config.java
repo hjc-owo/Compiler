@@ -9,9 +9,10 @@ public class Config {
     /**
      * The path of files.
      */
+    public static boolean test = false;
     public static String fileInPath = "testfile.txt";
     public static String fileOutPath = "output.txt";
-    public static String fileErrorPath = "error.txt";
+    public static String fileErrorPath = test ? "output.txt" : "error.txt";
     public static String fileLlvmIRRawPath = "llvm_ir_raw.txt";
     public static String fileLlvmIRPath = "llvm_ir.txt";
     public static String fileMipsPath = "mips.txt";
@@ -21,7 +22,7 @@ public class Config {
      */
     public static boolean lexer = false;
     public static boolean parser = false;
-    public static boolean error = false;
+    public static boolean error = true;
     public static boolean ir = true;
     public static boolean mips = true;
 
@@ -38,8 +39,8 @@ public class Config {
     public static boolean MulAndDivOptimization = true;
 
     public static void init() throws IOException {
-        IOUtils.delete(fileOutPath);
-        IOUtils.delete(fileErrorPath);
+        IOUtils.clear(fileOutPath);
+        IOUtils.clear(fileErrorPath);
         IOUtils.delete(fileLlvmIRRawPath);
         IOUtils.delete(fileLlvmIRPath);
         IOUtils.delete(fileMipsPath);

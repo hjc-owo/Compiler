@@ -59,4 +59,9 @@ public class IOUtils {
             file.delete();
         }
     }
+
+    public static void clear(String filename) {
+        delete(filename);
+        write("", filename);
+    }
 }
