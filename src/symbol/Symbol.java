@@ -1,6 +1,6 @@
 package symbol;
 
-public class Symbol {
+public abstract class Symbol {
     private String name;
 
     public Symbol(String name) {

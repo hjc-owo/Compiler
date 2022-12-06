@@ -6,21 +6,21 @@ package ir.values;
  * 从 Value 也能找到对应的使用这个 Value 的 User
  */
 public class Use {
-    private Value user; // 使用这个 Use 的 Value
+    private User user; // 使用这个 Use 的 Value
     private Value value; // 这个 Use 使用的 Value
     private int posOfOperand; // 在 OperandList 中的位置
 
-    public Use(Value user, Value value, int posOfOperand) {
+    public Use(Value value, User user, int posOfOperand) {
         this.user = user;
         this.value = value;
         this.posOfOperand = posOfOperand;
     }
 
-    public Value getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(Value user) {
+    public void setUser(User user) {
         this.user = user;
     }
 

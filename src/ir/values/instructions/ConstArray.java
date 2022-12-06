@@ -14,6 +14,7 @@ public class ConstArray extends Const {
     private Type elementType;
     private List<Value> array;
     private int capacity;
+    private boolean init = false;
 
     public ConstArray(Type type, Type elementType, int capacity) {
         super("", type);
@@ -55,6 +56,14 @@ public class ConstArray extends Const {
         this.capacity = capacity;
     }
 
+    public boolean isInit() {
+        return init || !allZero();
+    }
+
+    public void setInit(boolean init) {
+        this.init = init;
+    }
+
     public List<Value> get1DArray() {
         List<Value> result = new ArrayList<>();
         for (Value value : array) {
@@ -76,7 +85,7 @@ public class ConstArray extends Const {
         }
     }
 
-    private boolean allZero() {
+    public boolean allZero() {
         for (Value value : array) {
             if (value instanceof ConstInt) {
                 if (((ConstInt) value).getValue() != 0) {

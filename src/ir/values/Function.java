@@ -76,7 +76,6 @@ public class Function extends Value {
         s.append(((FunctionType) this.getType()).getReturnType()).append(" @").append(this.getName()).append("(");
         for (int i = 0; i < arguments.size(); i++) {
             s.append(arguments.get(i).getType());
-            // s.append(" ").append(arguments.get(i).getName());
             if (i != arguments.size() - 1) {
                 s.append(", ");
             }

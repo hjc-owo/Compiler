@@ -18,7 +18,7 @@ public class BrInst extends TerminatorInst {
                     (!(basicBlock.getInstructions().getEnd().getValue() instanceof BrInst) &&
                             !(basicBlock.getInstructions().getEnd().getValue() instanceof RetInst))) {
                 basicBlock.addSuccessor(trueBlock);
-                trueBlock.addSuccessor(basicBlock);
+                trueBlock.addPredecessor(basicBlock);
             }
         }
     }
@@ -39,9 +39,13 @@ public class BrInst extends TerminatorInst {
                         !(basicBlock.getInstructions().getEnd().getValue() instanceof RetInst))) {
             basicBlock.addSuccessor(trueBlock);
             basicBlock.addSuccessor(falseBlock);
-            trueBlock.addSuccessor(basicBlock);
-            falseBlock.addSuccessor(basicBlock);
+            trueBlock.addPredecessor(basicBlock);
+            falseBlock.addPredecessor(basicBlock);
         }
+    }
+
+    public Value getTarget() {
+        return this.getOperand(0);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package utils;
 
+import config.Config;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,18 +24,6 @@ public class IOUtils {
         return stringJoiner.toString();
     }
 
-    /**
-     * output to output.txt
-     */
-    public static void write(String content) {
-        File outputFile = new File("output.txt");
-        try (FileWriter writer = new FileWriter(outputFile, true)) {
-            writer.write(content);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void write(String content, String filename) {
         File outputFile = new File(filename);
         try (FileWriter writer = new FileWriter(outputFile, true)) {
@@ -43,13 +33,20 @@ public class IOUtils {
         }
     }
 
+    public static void write(String content) {
+        write(content, Config.fileOutPath);
+    }
+
     public static void error(String message) {
-        File outputFile = new File("error.txt");
-        try (FileWriter writer = new FileWriter(outputFile, true)) {
-            writer.write(message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        write(message, Config.fileErrorPath);
+    }
+
+    public static void llvm_ir_raw(String content) {
+        write(content, Config.fileLlvmIRRawPath);
+    }
+
+    public static void llvm_ir(String message) {
+        write(message, Config.fileLlvmIRPath);
     }
 
     public static void delete(String filename) {
@@ -57,5 +54,10 @@ public class IOUtils {
         if (file.exists()) {
             file.delete();
         }
+    }
+
+    public static void clear(String filename) {
+        delete(filename);
+        write("", filename);
     }
 }

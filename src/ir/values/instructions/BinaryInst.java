@@ -2,9 +2,7 @@ package ir.values.instructions;
 
 import ir.types.IntegerType;
 import ir.types.VoidType;
-import ir.values.BasicBlock;
-import ir.values.BuildFactory;
-import ir.values.Value;
+import ir.values.*;
 
 public class BinaryInst extends Instruction {
 

@@ -16,7 +16,11 @@ public class StmtNode {
     //	| 'return' [Exp] ';'
     //	| LVal '=' 'getint' '(' ')' ';'
     //	| 'printf' '(' FormatString { ',' Exp } ')' ';'
-    private Parser.StmtType type;
+    public enum StmtType {
+        LValAssignExp, Exp, Block, If, While, Break, Continue, Return, LValAssignGetint, Printf
+    }
+
+    private StmtType type;
     private LValNode lValNode;
     private Token assignToken;
     private ExpNode expNode;
@@ -37,7 +41,7 @@ public class StmtNode {
     private List<Token> commas;
     private List<ExpNode> expNodes;
 
-    public StmtNode(Parser.StmtType type, LValNode lValNode, Token assignToken, ExpNode expNode, Token semicnToken) {
+    public StmtNode(StmtType type, LValNode lValNode, Token assignToken, ExpNode expNode, Token semicnToken) {
         // LVal '=' Exp ';'
         this.type = type;
         this.lValNode = lValNode;
@@ -46,20 +50,20 @@ public class StmtNode {
         this.semicnToken = semicnToken;
     }
 
-    public StmtNode(Parser.StmtType type, ExpNode expNode, Token semicnToken) {
+    public StmtNode(StmtType type, ExpNode expNode, Token semicnToken) {
         // [Exp] ';'
         this.type = type;
         this.expNode = expNode;
         this.semicnToken = semicnToken;
     }
 
-    public StmtNode(Parser.StmtType type, BlockNode blockNode) {
+    public StmtNode(StmtType type, BlockNode blockNode) {
         // Block
         this.type = type;
         this.blockNode = blockNode;
     }
 
-    public StmtNode(Parser.StmtType type, Token ifToken, Token leftParentToken, CondNode condNode, Token rightParentToken, List<StmtNode> stmtNodes, Token elseToken) {
+    public StmtNode(StmtType type, Token ifToken, Token leftParentToken, CondNode condNode, Token rightParentToken, List<StmtNode> stmtNodes, Token elseToken) {
         // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
         this.type = type;
         this.ifToken = ifToken;
@@ -70,7 +74,7 @@ public class StmtNode {
         this.elseToken = elseToken;
     }
 
-    public StmtNode(Parser.StmtType type, Token whileToken, Token leftParentToken, CondNode condNode, Token rightParentToken, List<StmtNode> stmtNodes) {
+    public StmtNode(StmtType type, Token whileToken, Token leftParentToken, CondNode condNode, Token rightParentToken, List<StmtNode> stmtNodes) {
         // 'while' '(' Cond ')' Stmt
         this.type = type;
         this.whileToken = whileToken;
@@ -80,14 +84,14 @@ public class StmtNode {
         this.stmtNodes = stmtNodes;
     }
 
-    public StmtNode(Parser.StmtType type, Token breakOrContinueToken, Token semicnToken) {
+    public StmtNode(StmtType type, Token breakOrContinueToken, Token semicnToken) {
         // 'break' ';'
         this.type = type;
         this.breakOrContinueToken = breakOrContinueToken;
         this.semicnToken = semicnToken;
     }
 
-    public StmtNode(Parser.StmtType type, Token returnToken, ExpNode expNode, Token semicnToken) {
+    public StmtNode(StmtType type, Token returnToken, ExpNode expNode, Token semicnToken) {
         // 'return' [Exp] ';'
         this.type = type;
         this.returnToken = returnToken;
@@ -95,7 +99,7 @@ public class StmtNode {
         this.semicnToken = semicnToken;
     }
 
-    public StmtNode(Parser.StmtType type, LValNode lValNode, Token assignToken, Token getintToken, Token leftParentToken, Token rightParentToken, Token semicnToken) {
+    public StmtNode(StmtType type, LValNode lValNode, Token assignToken, Token getintToken, Token leftParentToken, Token rightParentToken, Token semicnToken) {
         // LVal '=' 'getint' '(' ')' ';'
         this.type = type;
         this.lValNode = lValNode;
@@ -106,7 +110,7 @@ public class StmtNode {
         this.semicnToken = semicnToken;
     }
 
-    public StmtNode(Parser.StmtType type, Token printfToken, Token leftParentToken, Token formatString, List<Token> commas, List<ExpNode> expNodes, Token rightParentToken, Token semicnToken) {
+    public StmtNode(StmtType type, Token printfToken, Token leftParentToken, Token formatString, List<Token> commas, List<ExpNode> expNodes, Token rightParentToken, Token semicnToken) {
         // 'printf' '(' FormatString { ',' Exp } ')' ';'
         this.type = type;
         this.printfToken = printfToken;
@@ -118,7 +122,7 @@ public class StmtNode {
         this.semicnToken = semicnToken;
     }
 
-    public Parser.StmtType getType() {
+    public StmtType getType() {
         return type;
     }
 

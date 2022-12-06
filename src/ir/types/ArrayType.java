@@ -24,6 +24,18 @@ public class ArrayType implements Type {
         return elementType;
     }
 
+    public boolean is1DArray() {
+        return elementType instanceof IntegerType && ((IntegerType) elementType).isI32();
+    }
+
+    public boolean isHDArray() {
+        return elementType instanceof ArrayType;
+    }
+
+    public boolean isString() {
+        return elementType instanceof IntegerType && ((IntegerType) elementType).isI8();
+    }
+
     public int getLength() {
         return length;
     }

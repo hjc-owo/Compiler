@@ -11,6 +11,10 @@ public class PointerType implements Type {
         return targetType;
     }
 
+    public boolean isString() {
+        return targetType instanceof ArrayType && ((ArrayType) targetType).isString();
+    }
+
     @Override
     public String toString() {
         return targetType.toString() + "*";

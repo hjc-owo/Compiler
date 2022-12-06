@@ -3,6 +3,7 @@ package ir.values;
 import ir.IRModule;
 import ir.types.PointerType;
 import ir.types.Type;
+import ir.values.instructions.ConstArray;
 
 public class GlobalVar extends User {
 
@@ -30,6 +31,18 @@ public class GlobalVar extends User {
 
     public void setValue(Value value) {
         this.value = value;
+    }
+
+    public boolean isString() {
+        return value instanceof ConstString;
+    }
+
+    public boolean isInt() {
+        return value instanceof ConstInt;
+    }
+
+    public boolean isArray() {
+        return value instanceof ConstArray;
     }
 
     @Override

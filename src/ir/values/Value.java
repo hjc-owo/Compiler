@@ -55,8 +55,22 @@ public class Value {
         usesList.removeIf(use -> use.getUser() == user);
     }
 
+    public void removeFromUseList(Use use) {
+        usesList.remove(use);
+    }
+
+
     @Override
     public String toString() {
         return type.toString() + " " + name;
+    }
+
+    // 将该 this 的所有被用到的 user 中的操作数都替换成 value
+    public void replaceUsedWith(Value value) {
+        List<Use> tmp = new ArrayList<>(usesList);
+        for (Use use : tmp) {
+            use.getUser().setOperands(use.getPosOfOperand(), value);
+        }
+        this.usesList.clear();
     }
 }

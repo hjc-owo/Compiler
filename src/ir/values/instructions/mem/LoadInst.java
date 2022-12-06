@@ -21,6 +21,10 @@ public class LoadInst extends MemInst {
         return getOperands().get(0);
     }
 
+    public Value getIndex() {
+        return getOperands().get(1);
+    }
+
     @Override
     public String toString() {
         return getName() + " = load " + getType() + ", " + getPointer().getType() + " " + getPointer().getName();

@@ -13,7 +13,17 @@ import java.util.List;
 import java.util.Map;
 
 public class Lexer {
-    private List<Token> tokens;
+    private static final Lexer instance = new Lexer();
+
+    public static Lexer getInstance() {
+        return instance;
+    }
+
+    private List<Token> tokens = new ArrayList<>();
+
+    public List<Token> getTokens() {
+        return tokens;
+    }
 
     private Map<String, TokenType> keywords = new HashMap<String, TokenType>() {{
         put("main", TokenType.MAINTK);
@@ -30,11 +40,7 @@ public class Lexer {
         put("void", TokenType.VOIDTK);
     }};
 
-    public Lexer() {
-        this.tokens = new ArrayList<>();
-    }
-
-    public List<Token> analyze(String content) {
+    public void analyze(String content) {
 
         int lineNumber = 1; // 当前所在行数
         int contentLength = content.length(); // 源代码长度
@@ -73,14 +79,14 @@ public class Lexer {
                         s += d;
                         if (d == 32 || d == 33 || d >= 40 && d <= 126) {
                             if (d == 92 && content.charAt(j + 1) != 'n') {
-                                ErrorHandler.addError(new Error(lineNumber, ErrorType.a));
+                                ErrorHandler.getInstance().addError(new Error(lineNumber, ErrorType.a));
                             }
                         } else if (d == 37) {
                             if (content.charAt(j + 1) != 'd') {
-                                ErrorHandler.addError(new Error(lineNumber, ErrorType.a));
+                                ErrorHandler.getInstance().addError(new Error(lineNumber, ErrorType.a));
                             }
                         } else {
-                            ErrorHandler.addError(new Error(lineNumber, ErrorType.a));
+                            ErrorHandler.getInstance().addError(new Error(lineNumber, ErrorType.a));
                         }
                     } else {
                         i = j;
@@ -114,6 +120,7 @@ public class Lexer {
             } else if (c == '/') { // / 或 // 或 /*
                 if (next == '/') { // //
                     int j = content.indexOf('\n', i + 2);
+                    if (j == -1) j = contentLength;
                     i = j - 1;
                 } else if (next == '*') { // /* */
                     for (int j = i + 2; j < contentLength; j++) {
@@ -156,7 +163,6 @@ public class Lexer {
             else if (c == '{') tokens.add(new Token(TokenType.LBRACE, lineNumber, "{"));
             else if (c == '}') tokens.add(new Token(TokenType.RBRACE, lineNumber, "}"));
         }
-        return tokens;
     }
 
     public void printLexAns() {
