@@ -442,7 +442,7 @@ public class GVNGCM implements Pass.IRPass {
     }
 
 
-    private HashSet<Instruction> dirtyInst;
+    private Set<Instruction> dirtyInst;
 
     public void runGCM(Function function) {
         // 先做循环分析
@@ -576,8 +576,7 @@ public class GVNGCM implements Pass.IRPass {
         return (instruction instanceof BinaryInst && !((BinaryInst) instruction).isCond()) ||
                 instruction instanceof LoadInst ||
                 instruction instanceof GEPInst ||
-                (instruction instanceof CallInst && ((CallInst) instruction).isPure())
-                ;
+                (instruction instanceof CallInst && ((CallInst) instruction).isPure());
     }
 
     private void moveAtSecToLast(Instruction instruction, BasicBlock basicBlock) {

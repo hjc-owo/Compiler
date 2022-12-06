@@ -71,6 +71,9 @@ public class Function extends Value {
 
     public void addSuccessor(Function successor) {
         this.successors.add(successor);
+        if (!successor.isLibraryFunction) {
+            successorsNotAllLibrary = true;
+        }
     }
 
     public boolean isLibraryFunction() {

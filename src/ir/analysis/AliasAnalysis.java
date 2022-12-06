@@ -144,10 +144,8 @@ public class AliasAnalysis {
                 Instruction inst = instNode.getValue();
                 // 局部变量不需要分析
                 if (inst instanceof LoadInst) {
-                    LoadInst loadInst = (LoadInst) inst;
-                    if (loadInst.getPointer() instanceof AllocaInst) {
-                        AllocaInst allocaInst = (AllocaInst) loadInst.getPointer();
-                        if (allocaInst.getAllocaType() instanceof IntegerType) {
+                    if (((LoadInst) inst).getPointer() instanceof AllocaInst) {
+                        if (((AllocaInst) ((LoadInst) inst).getPointer()).getAllocaType() instanceof IntegerType) {
                             continue;
                         }
                     }
@@ -275,8 +273,6 @@ public class AliasAnalysis {
 
     public static void runStoreDependLoad(Function function) {
         List<LoadInst> loads = new ArrayList<>();
-
-
         // load指令memPhi处理
         Queue<BasicBlock> w = new LinkedList<>();
         Map<MemPhi, Value> memPhiToLoad = new HashMap<>();
@@ -298,7 +294,6 @@ public class AliasAnalysis {
                 }
             }
         }));
-
 
         // construct loadDepInst
         Map<Value, Value> values = new HashMap<>();
@@ -367,11 +362,9 @@ public class AliasAnalysis {
                     if (!(inst instanceof MemPhi)) {
                         break;
                     }
-                    MemPhi memPhi = (MemPhi) inst;
-
-                    if (memPhi.getUsesList().isEmpty() || memPhi.getUsesList().get(0) == null) {
-                        memPhi.getNode().removeFromList();
-                        memPhi.removeUseFromOperands();
+                    if (inst.getUsesList().isEmpty() || inst.getUsesList().get(0) == null) {
+                        inst.getNode().removeFromList();
+                        inst.removeUseFromOperands();
                         clear = false;
                     }
 

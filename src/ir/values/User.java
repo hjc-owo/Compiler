@@ -36,16 +36,6 @@ public abstract class User extends Value {
         }
     }
 
-    public void addOperand(int posOfOperand, Value operand) {
-        if (posOfOperand >= operands.size()) {
-            return;
-        }
-        this.operands.set(posOfOperand, operand);
-        if (operand != null) {
-            operand.addUse(new Use(operand, this, posOfOperand));
-        }
-    }
-
     public void addOperand(Value operand) {
         this.operands.add(operand);
         if (operand != null) {

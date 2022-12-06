@@ -57,7 +57,7 @@ public class ConstArray extends Const {
     }
 
     public boolean isInit() {
-        return init;
+        return init || !allZero();
     }
 
     public void setInit(boolean init) {

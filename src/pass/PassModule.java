@@ -44,6 +44,9 @@ public class PassModule {
         if (Config.DeadCodeElimination) {
             irPasses.add(new DeadCodeElimination());
         }
+        if (Config.LocalArrayPromotion) {
+            irPasses.add(new LocalArrayPromotion());
+        }
         if (Config.MarkConstArray) {
             irPasses.add(new MarkConstArray());
         }

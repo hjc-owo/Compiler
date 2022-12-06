@@ -36,6 +36,7 @@ public class Config {
     public static boolean Mem2Reg = false;
     public static boolean GVNGCM = false;
     public static boolean FunctionInline = false;
+    public static boolean LocalArrayPromotion = false;
     public static boolean MarkConstArray = true;
     public static boolean BranchOptimization = true;
     public static boolean LCSSA = true;

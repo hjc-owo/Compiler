@@ -106,6 +106,7 @@ public class MipsGenModule {
                     }
                     translate(ir);
                 }
+                clearRegMap();
             }
         }
         IOUtils.mips("\nreturn:\n");
@@ -527,7 +528,12 @@ public class MipsGenModule {
                 IOUtils.mips("lw " + reg + ", 0(" + reg + ")\n");
             }
         } else {
-            IOUtils.mips("lw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
+            String name1 = Reg.getInstance().loadFromRegMap(name);
+            if (name1 == null) {
+                IOUtils.mips("lw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
+            } else {
+                IOUtils.mips("move " + reg + ", " + name1 + "\n");
+            }
         }
     }
 
@@ -542,7 +548,16 @@ public class MipsGenModule {
                 IOUtils.mips("sw " + reg + ", 0($t1)\n");
             }
         } else {
-            IOUtils.mips("sw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
+            List<String> list = Reg.getInstance().storeToRegMap(name);
+            if (list.size() == 1) {
+                String i = list.get(0);
+                IOUtils.mips("move " + i + ", " + reg + "\n");
+            } else if (list.size() == 2) {
+                String i = list.get(0);
+                String name1 = list.get(1);
+                IOUtils.mips("sw " + i + ", " + mem.get(name1).getSecond() + "(" + mem.get(name1).getFirst() + ")\n");
+                IOUtils.mips("move " + i + ", " + reg + "\n");
+            }
         }
     }
 
@@ -554,4 +569,12 @@ public class MipsGenModule {
         return str.matches("-?[0-9]+");
     }
 
+    private void clearRegMap() {
+        Map<String, Integer> map = Reg.getInstance().getRegMap();
+        for (String s : map.keySet()) {
+            int i = map.get(s);
+            IOUtils.mips("sw " + Reg.getInstance().getReg(i) + ", " + mem.get(s).getSecond() + "(" + mem.get(s).getFirst() + ")\n");
+        }
+        Reg.getInstance().clear();
+    }
 }
