@@ -12,10 +12,12 @@ public class Value {
     private Type type;
     private List<Use> usesList; // 使用了这个 Value 的 User 列表，这对应着 def-use 关系
     public static int REG_NUMBER = 0; // LLVM 中的寄存器编号
+    private final String id; // LLVM 中的 Value 的唯一编号
 
     public Value(String name, Type type) {
         this.name = name;
         this.type = type;
+        this.id = UniqueIdGen.getInstance().getUniqueId();
         this.usesList = new ArrayList<>();
     }
 
@@ -59,6 +61,31 @@ public class Value {
         usesList.remove(use);
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getUniqueName() {
+        if (isNumber()) return getName();
+        if (isGlobal()) return getGlobalName();
+        return getName() + "_" + getId();
+    }
+
+    public String getGlobalName() {
+        return name.replaceAll("@", "");
+    }
+
+    public boolean isNumber() {
+        return this instanceof ConstInt;
+    }
+
+    public int getNumber() {
+        return Integer.parseInt(name);
+    }
+
+    public boolean isGlobal() {
+        return name.startsWith("@");
+    }
 
     @Override
     public String toString() {

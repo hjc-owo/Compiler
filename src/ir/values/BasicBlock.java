@@ -4,7 +4,6 @@ import ir.types.FunctionType;
 import ir.types.LabelType;
 import ir.types.VoidType;
 import ir.values.instructions.Instruction;
-import ir.values.instructions.mem.PhiInst;
 import ir.values.instructions.mem.StoreInst;
 import ir.values.instructions.terminator.BrInst;
 import ir.values.instructions.terminator.CallInst;
@@ -13,7 +12,6 @@ import utils.IList;
 import utils.INode;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 public class BasicBlock extends Value {
@@ -85,6 +83,9 @@ public class BasicBlock extends Value {
         }
     }
 
+    public String getLabelName() {
+        return "label_" + getId();
+    }
 
     @Override
     public String toString() {

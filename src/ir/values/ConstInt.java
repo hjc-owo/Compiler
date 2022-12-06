@@ -18,6 +18,11 @@ public class ConstInt extends Const {
         this.value = value;
     }
 
+    public ConstInt(int value, boolean isI1) {
+        super(String.valueOf(value), IntegerType.i1);
+        this.value = value;
+    }
+
     public int getValue() {
         return value;
     }

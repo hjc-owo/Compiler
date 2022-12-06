@@ -49,6 +49,10 @@ public class IOUtils {
         write(message, Config.fileLlvmIRPath);
     }
 
+    public static void mips(String message) {
+        write(message, Config.fileMipsPath);
+    }
+
     public static void delete(String filename) {
         File file = new File(filename);
         if (file.exists()) {

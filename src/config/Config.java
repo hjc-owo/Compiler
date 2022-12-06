@@ -15,14 +15,16 @@ public class Config {
     public static String fileErrorPath = test ? "output.txt" : "error.txt";
     public static String fileLlvmIRRawPath = "llvm_ir_raw.txt";
     public static String fileLlvmIRPath = "llvm_ir.txt";
+    public static String fileMipsPath = "mips.txt";
     public static String stdOutPath = "stdout.txt";
     /**
      * stages of compilation
      */
     public static boolean lexer = false;
     public static boolean parser = false;
-    public static boolean error = true;
+    public static boolean error = false;
     public static boolean ir = true;
+    public static boolean mips = true;
 
     /**
      * optimization level
@@ -35,6 +37,7 @@ public class Config {
         IOUtils.clear(fileErrorPath);
         IOUtils.delete(fileLlvmIRRawPath);
         IOUtils.delete(fileLlvmIRPath);
+        IOUtils.delete(fileMipsPath);
         System.setOut(new PrintStream(stdOutPath));
     }
 }

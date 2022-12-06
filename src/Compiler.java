@@ -1,3 +1,4 @@
+import backend.MipsGenModule;
 import config.Config;
 import error.ErrorHandler;
 import frontend.Lexer;
@@ -37,6 +38,11 @@ public class Compiler {
             LLVMGenerator.getInstance().visitCompUnit(Parser.getInstance().getCompUnitNode());
             IOUtils.llvm_ir_raw(IRModule.getInstance().toString());
             IOUtils.llvm_ir(IRModule.getInstance().toString());
+        }
+
+        if (Config.mips) {
+            MipsGenModule.getInstance().loadIR();
+            MipsGenModule.getInstance().genMips();
         }
     }
 }
