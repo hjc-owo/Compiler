@@ -60,19 +60,19 @@ public class LLVMGenerator {
      */
     private List<Pair<Map<String, Value>, Map<String, Integer>>> symbolTable = new ArrayList<>();
 
-    public Map<String, Value> getCurSymbolTable() {
+    private Map<String, Value> getCurSymbolTable() {
         return symbolTable.get(symbolTable.size() - 1).getFirst();
     }
 
-    public void addSymbol(String name, Value value) {
+    private void addSymbol(String name, Value value) {
         getCurSymbolTable().put(name, value);
     }
 
-    public void addGlobalSymbol(String name, Value value) {
+    private void addGlobalSymbol(String name, Value value) {
         symbolTable.get(0).getFirst().put(name, value);
     }
 
-    public Value getValue(String name) {
+    private Value getValue(String name) {
         for (int i = symbolTable.size() - 1; i >= 0; i--) {
             if (symbolTable.get(i).getFirst().containsKey(name)) {
                 return symbolTable.get(i).getFirst().get(name);
@@ -85,15 +85,15 @@ public class LLVMGenerator {
      * 常量表
      */
 
-    public Map<String, Integer> getCurConstTable() {
+    private Map<String, Integer> getCurConstTable() {
         return symbolTable.get(symbolTable.size() - 1).getSecond();
     }
 
-    public void addConst(String name, Integer value) {
+    private void addConst(String name, Integer value) {
         getCurConstTable().put(name, value);
     }
 
-    public Integer getConst(String name) {
+    private Integer getConst(String name) {
         for (int i = symbolTable.size() - 1; i >= 0; i--) {
             if (symbolTable.get(i).getSecond().containsKey(name)) {
                 return symbolTable.get(i).getSecond().get(name);
@@ -102,7 +102,7 @@ public class LLVMGenerator {
         return 0;
     }
 
-    public void changeConst(String name, Integer value) {
+    private void changeConst(String name, Integer value) {
         for (int i = symbolTable.size() - 1; i >= 0; i--) {
             if (symbolTable.get(i).getSecond().containsKey(name)) {
                 symbolTable.get(i).getSecond().put(name, value);
@@ -114,15 +114,15 @@ public class LLVMGenerator {
     /**
      * 添加和删除当前块符号表和常量表
      */
-    public void addSymbolAndConstTable() {
+    private void addSymbolAndConstTable() {
         symbolTable.add(new Pair<>(new HashMap<>(), new HashMap<>()));
     }
 
-    public void removeSymbolAndConstTable() {
+    private void removeSymbolAndConstTable() {
         symbolTable.remove(symbolTable.size() - 1);
     }
 
-    public int calculate(Operator op, int a, int b) {
+    private int calculate(Operator op, int a, int b) {
         switch (op) {
             case Add:
                 return a + b;
@@ -185,7 +185,7 @@ public class LLVMGenerator {
         visitMainFuncDef(compUnitNode.getMainFuncDefNode());
     }
 
-    public void visitDecl(DeclNode declNode) {
+    private void visitDecl(DeclNode declNode) {
         // Decl -> ConstDecl | VarDecl
         if (declNode.getConstDecl() != null) {
             visitConstDecl(declNode.getConstDecl());
@@ -194,7 +194,7 @@ public class LLVMGenerator {
         }
     }
 
-    public void visitConstDecl(ConstDeclNode constDeclNode) {
+    private void visitConstDecl(ConstDeclNode constDeclNode) {
         // ConstDecl -> 'const' BType ConstDef { ',' ConstDef } ';'
         tmpType = IntegerType.i32;
         for (ConstDefNode constDefNode : constDeclNode.getConstDefNodes()) {
