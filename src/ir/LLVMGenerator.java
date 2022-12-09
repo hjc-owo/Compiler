@@ -7,6 +7,7 @@ import ir.values.instructions.ConstArray;
 import ir.values.instructions.Operator;
 import node.*;
 import token.TokenType;
+import utils.Pair;
 
 import java.util.*;
 
@@ -55,12 +56,12 @@ public class LLVMGenerator {
 
 
     /**
-     * 新符号表系统
+     * 新符号表系统和常量表
      */
-    private List<Map<String, Value>> symbolTable = new ArrayList<>();
+    private List<Pair<Map<String, Value>, Map<String, Integer>>> symbolTable = new ArrayList<>();
 
     public Map<String, Value> getCurSymbolTable() {
-        return symbolTable.get(symbolTable.size() - 1);
+        return symbolTable.get(symbolTable.size() - 1).getFirst();
     }
 
     public void addSymbol(String name, Value value) {
@@ -68,13 +69,13 @@ public class LLVMGenerator {
     }
 
     public void addGlobalSymbol(String name, Value value) {
-        symbolTable.get(0).put(name, value);
+        symbolTable.get(0).getFirst().put(name, value);
     }
 
     public Value getValue(String name) {
         for (int i = symbolTable.size() - 1; i >= 0; i--) {
-            if (symbolTable.get(i).containsKey(name)) {
-                return symbolTable.get(i).get(name);
+            if (symbolTable.get(i).getFirst().containsKey(name)) {
+                return symbolTable.get(i).getFirst().get(name);
             }
         }
         return null;
@@ -83,10 +84,9 @@ public class LLVMGenerator {
     /**
      * 常量表
      */
-    private List<Map<String, Integer>> constTable = new ArrayList<>();
 
     public Map<String, Integer> getCurConstTable() {
-        return constTable.get(constTable.size() - 1);
+        return symbolTable.get(symbolTable.size() - 1).getSecond();
     }
 
     public void addConst(String name, Integer value) {
@@ -94,21 +94,32 @@ public class LLVMGenerator {
     }
 
     public Integer getConst(String name) {
-        for (int i = constTable.size() - 1; i >= 0; i--) {
-            if (constTable.get(i).containsKey(name)) {
-                return constTable.get(i).get(name);
+        for (int i = symbolTable.size() - 1; i >= 0; i--) {
+            if (symbolTable.get(i).getSecond().containsKey(name)) {
+                return symbolTable.get(i).getSecond().get(name);
             }
         }
         return 0;
     }
 
     public void changeConst(String name, Integer value) {
-        for (int i = constTable.size() - 1; i >= 0; i--) {
-            if (constTable.get(i).containsKey(name)) {
-                constTable.get(i).put(name, value);
+        for (int i = symbolTable.size() - 1; i >= 0; i--) {
+            if (symbolTable.get(i).getSecond().containsKey(name)) {
+                symbolTable.get(i).getSecond().put(name, value);
                 return;
             }
         }
+    }
+
+    /**
+     * 添加和删除当前块符号表和常量表
+     */
+    public void addSymbolAndConstTable() {
+        symbolTable.add(new Pair<>(new HashMap<>(), new HashMap<>()));
+    }
+
+    public void removeSymbolAndConstTable() {
+        symbolTable.remove(symbolTable.size() - 1);
     }
 
     public int calculate(Operator op, int a, int b) {
@@ -152,20 +163,6 @@ public class LLVMGenerator {
 
     private String getStringName(String str) {
         return getStringName(getStringIndex(str));
-    }
-
-
-    /**
-     * 添加和删除当前块符号表和常量表
-     */
-    public void addSymbolAndConstTable() {
-        symbolTable.add(new HashMap<>());
-        constTable.add(new HashMap<>());
-    }
-
-    public void removeSymbolAndConstTable() {
-        symbolTable.remove(symbolTable.size() - 1);
-        constTable.remove(constTable.size() - 1);
     }
 
     /**

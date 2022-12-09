@@ -79,7 +79,7 @@ public class MipsGenModule {
         }
         IOUtils.mips("\n.text\n");
         IOUtils.mips("\njal main\n");
-        IOUtils.mips("j return\n\n");
+        IOUtils.mips("\nj return\n\n");
 
         for (INode<Function, IRModule> funcEntry : irModule.getFunctions()) {
             Function function = funcEntry.getValue();
@@ -106,7 +106,9 @@ public class MipsGenModule {
                     }
                     translate(ir);
                 }
-                clearRegMap();
+                if (Config.RegAllocator) {
+                    clearRegMap();
+                }
             }
         }
         IOUtils.mips("\nreturn:\n");
@@ -528,11 +530,15 @@ public class MipsGenModule {
                 IOUtils.mips("lw " + reg + ", 0(" + reg + ")\n");
             }
         } else {
-            String name1 = Reg.getInstance().loadFromRegMap(name);
-            if (name1 == null) {
-                IOUtils.mips("lw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
+            if (Config.RegAllocator) {
+                String name1 = Reg.getInstance().loadFromRegMap(name);
+                if (name1 == null) {
+                    IOUtils.mips("lw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
+                } else {
+                    IOUtils.mips("move " + reg + ", " + name1 + "\n");
+                }
             } else {
-                IOUtils.mips("move " + reg + ", " + name1 + "\n");
+                IOUtils.mips("lw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
             }
         }
     }
@@ -548,15 +554,19 @@ public class MipsGenModule {
                 IOUtils.mips("sw " + reg + ", 0($t1)\n");
             }
         } else {
-            List<String> list = Reg.getInstance().storeToRegMap(name);
-            if (list.size() == 1) {
-                String i = list.get(0);
-                IOUtils.mips("move " + i + ", " + reg + "\n");
-            } else if (list.size() == 2) {
-                String i = list.get(0);
-                String name1 = list.get(1);
-                IOUtils.mips("sw " + i + ", " + mem.get(name1).getSecond() + "(" + mem.get(name1).getFirst() + ")\n");
-                IOUtils.mips("move " + i + ", " + reg + "\n");
+            if (Config.RegAllocator) {
+                List<String> list = Reg.getInstance().storeToRegMap(name);
+                if (list.size() == 1) {
+                    String i = list.get(0);
+                    IOUtils.mips("move " + i + ", " + reg + "\n");
+                } else if (list.size() == 2) {
+                    String i = list.get(0);
+                    String name1 = list.get(1);
+                    IOUtils.mips("sw " + i + ", " + mem.get(name1).getSecond() + "(" + mem.get(name1).getFirst() + ")\n");
+                    IOUtils.mips("move " + i + ", " + reg + "\n");
+                }
+            } else {
+                IOUtils.mips("sw " + reg + ", " + mem.get(name).getSecond() + "(" + mem.get(name).getFirst() + ")\n");
             }
         }
     }

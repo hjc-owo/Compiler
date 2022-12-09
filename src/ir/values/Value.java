@@ -53,12 +53,12 @@ public class Value {
         this.usesList.add(use);
     }
 
-    public void removeUseByUser(User user) {
-        usesList.removeIf(use -> use.getUser() == user);
-    }
-
     public void removeFromUseList(Use use) {
         usesList.remove(use);
+    }
+
+    public void removeUseByUser(User user) {
+        usesList.removeIf(use -> use.getUser().equals(user));
     }
 
     public String getId() {

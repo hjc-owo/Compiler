@@ -41,8 +41,8 @@ public class Config {
     public static boolean BranchOptimization = true;
     public static boolean LCSSA = true;
     public static boolean RemoveUnUseLoop = true;
-
     public static boolean MulAndDivOptimization = true;
+    public static boolean RegAllocator = false;
 
     public static void init() throws IOException {
         IOUtils.clear(fileOutPath);

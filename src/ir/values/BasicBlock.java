@@ -1,5 +1,6 @@
 package ir.values;
 
+import ir.analysis.AliasAnalysis;
 import ir.types.FunctionType;
 import ir.types.LabelType;
 import ir.types.VoidType;
@@ -88,7 +89,7 @@ public class BasicBlock extends Value {
     public void refreshReg() {
         for (INode<Instruction, BasicBlock> inode : this.instructions) {
             Instruction inst = inode.getValue();
-            if (!(inst instanceof StoreInst || inst instanceof BrInst || inst instanceof RetInst ||
+            if (!(inst instanceof AliasAnalysis.MemPhi || inst instanceof AliasAnalysis.LoadDepInst ||inst instanceof StoreInst || inst instanceof BrInst || inst instanceof RetInst ||
                     (inst instanceof CallInst && ((FunctionType) inst.getOperands().get(0).getType()).getReturnType() instanceof VoidType))) {
                 inst.setName("%" + REG_NUMBER++);
             }

@@ -8,7 +8,21 @@ public class BinaryInst extends Instruction {
 
     public BinaryInst(BasicBlock basicBlock, Operator op, Value left, Value right) {
         super(VoidType.voidType, op, basicBlock);
-        // todo: may optimize div and mod here
+        if (op == Operator.Mod) {
+            boolean isRight2Square = false;
+            if (right instanceof ConstInt) {
+                int m = ((ConstInt) right).getValue();
+                if ((m > 0) && ((m & (m - 1)) == 0)) {
+                    isRight2Square = true;
+                }
+            }
+            if (!isRight2Square) {
+                Value tmp = BuildFactory.getInstance().buildBinary(basicBlock, Operator.Div, left, right);
+                tmp = BuildFactory.getInstance().buildBinary(basicBlock, Operator.Mul, right, tmp);
+                this.setOperator(Operator.Sub);
+                right = tmp;
+            }
+        }
         boolean isLeftI1 = left.getType() instanceof IntegerType && ((IntegerType) left.getType()).isI1();
         boolean isRightI1 = right.getType() instanceof IntegerType && ((IntegerType) right.getType()).isI1();
         boolean isLeftI32 = left.getType() instanceof IntegerType && ((IntegerType) left.getType()).isI32();
@@ -133,7 +147,6 @@ public class BinaryInst extends Instruction {
         return ans;
     }
 
-    // 针对ConstantInt和ConstantFloat的化简
     // 无法化简返回True，能够化简返回值
     public static Value simplifyConstant(Operator operator, Const left, Const right) {
         boolean isAllConstantInt = left instanceof ConstInt && right instanceof ConstInt;
