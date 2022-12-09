@@ -3,7 +3,7 @@ package error;
 import node.*;
 import symbol.*;
 import utils.IOUtils;
-import utils.Pair;
+import utils.Triple;
 
 import java.util.*;
 
@@ -14,12 +14,10 @@ public class ErrorHandler {
         return instance;
     }
 
-    private List<Pair<Map<String, Symbol>, Map<Boolean, FuncType>>> symbolTables = new ArrayList<>(); // 符号表栈 + 作用域
+    private List<Triple<Map<String, Symbol>, Boolean, FuncType>> symbolTables = new ArrayList<>(); // 符号表栈 + 作用域
 
     private void addSymbolTable(boolean isFunc, FuncType funcType) {
-        symbolTables.add(new Pair<>(new HashMap<>(), new HashMap<Boolean, FuncType>() {{
-            put(isFunc, funcType);
-        }}));
+        symbolTables.add(new Triple<>(new HashMap<>(), isFunc, funcType));
     }
 
     private void removeSymbolTable() {
@@ -41,7 +39,7 @@ public class ErrorHandler {
 
     private boolean isInFunc() {
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
-            if (symbolTables.get(i).getSecond().containsKey(true)) {
+            if (symbolTables.get(i).getSecond()) {
                 return true;
             }
         }
@@ -50,19 +48,19 @@ public class ErrorHandler {
 
     private FuncType getFuncType() {
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
-            if (symbolTables.get(i).getSecond().containsKey(true)) {
-                return symbolTables.get(i).getSecond().get(true);
+            if (symbolTables.get(i).getSecond()) {
+                return symbolTables.get(i).getThird();
             }
         }
         return null;
     }
 
     private boolean isCurrentFunc() {
-        return symbolTables.get(symbolTables.size() - 1).getSecond().containsKey(true);
+        return symbolTables.get(symbolTables.size() - 1).getSecond();
     }
 
     private FuncType getCurrentFuncType() {
-        return symbolTables.get(symbolTables.size() - 1).getSecond().get(true);
+        return symbolTables.get(symbolTables.size() - 1).getThird();
     }
 
     private void put(String ident, Symbol symbol) {
