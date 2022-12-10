@@ -53,14 +53,6 @@ public class Value {
         this.usesList.add(use);
     }
 
-    public void removeFromUseList(Use use) {
-        usesList.remove(use);
-    }
-
-    public void removeUseByUser(User user) {
-        usesList.removeIf(use -> use.getUser().equals(user));
-    }
-
     public String getId() {
         return id;
     }
@@ -99,5 +91,19 @@ public class Value {
             use.getUser().setOperands(use.getPosOfOperand(), value);
         }
         this.usesList.clear();
+    }
+
+    public void removeFromUseList(Use use) {
+        usesList.remove(use);
+    }
+
+    public void removeUseByUser(User user) {
+        List<Use> tmpUseList = new ArrayList<>(usesList);
+        for (Use use : usesList) {
+            if (use.getUser().equals(user)) {
+                tmpUseList.remove(use);
+            }
+        }
+        this.usesList = tmpUseList;
     }
 }

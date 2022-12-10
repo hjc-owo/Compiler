@@ -18,19 +18,6 @@ import java.util.*;
 
 public class Mem2Reg implements Pass.IRPass {
 
-    private static class RenameBlock {
-        private final BasicBlock basicBlock;
-        private final BasicBlock predecessor;
-        private final List<Value> values;
-
-        public RenameBlock(BasicBlock basicBlock, BasicBlock predecessor, List<Value> values) {
-            this.basicBlock = basicBlock;
-            this.predecessor = predecessor;
-            this.values = new ArrayList<>(values);
-        }
-
-    }
-
     @Override
     public String getName() {
         return "Mem2Reg";
@@ -50,19 +37,23 @@ public class Mem2Reg implements Pass.IRPass {
         List<AllocaInst> defArraylist = new ArrayList<>();
         Map<BasicBlock, Set<BasicBlock>> DFMap = DomAnalysis.analyzeDom(function);
         Map<PhiInst, AllocaInst> phiAllocaInstHashMap = new HashMap<>();
+
         Stack<RenameBlock> renameBlockStack = new Stack<>();
         List<Value> values = new ArrayList<>();
+        // initial the variables' defs
         for (INode<BasicBlock, Function> basicBlockINode : function.getList()) {
             BasicBlock basicBlock = basicBlockINode.getValue();
             for (INode<Instruction, BasicBlock> instructionINode : basicBlock.getInstructions()) {
                 Instruction instruction = instructionINode.getValue();
-                if (instruction.getOperator() == Operator.Alloca) {
+
+                if (instruction.getOperator().equals(Operator.Alloca)) {
                     AllocaInst allocaInst = (AllocaInst) instruction;
-                    if (allocaInst.getAllocaType() instanceof IntegerType &&
-                            ((IntegerType) allocaInst.getAllocaType()).isI32()) {
+
+                    if (allocaInst.getAllocaType() instanceof IntegerType) {
                         defMap.put(allocaInst, new ArrayList<>());
                         defArraylist.add(allocaInst);
                     }
+
                 }
             }
         }
@@ -72,15 +63,16 @@ public class Mem2Reg implements Pass.IRPass {
             BasicBlock basicBlock = basicBlockINode.getValue();
             for (INode<Instruction, BasicBlock> instructionINode : basicBlock.getInstructions()) {
                 Instruction instruction = instructionINode.getValue();
-                if (instruction.getOperator() == Operator.Store) {
+
+                if (instruction.getOperator().equals(Operator.Store)) {
                     StoreInst storeInst = (StoreInst) instruction;
                     if (!(storeInst.getOperands().get(1) instanceof Instruction)) {
                         continue;
                     }
-                    if (storeInst.getOperands().get(1) instanceof AllocaInst) {
-                        AllocaInst allocaInst = (AllocaInst) storeInst.getOperands().get(1);
-                        if (defMap.containsKey(allocaInst)) {
-                            defMap.get(allocaInst).add(basicBlock);
+                    Instruction targetInst = (Instruction) storeInst.getOperands().get(1);
+                    if (targetInst instanceof AllocaInst) {
+                        if (defMap.containsKey((AllocaInst) targetInst)) {
+                            defMap.get((AllocaInst) targetInst).add(basicBlock);
                         }
                     }
                 }
@@ -119,12 +111,13 @@ public class Mem2Reg implements Pass.IRPass {
                     if (!placed.get(Y)) {
                         placed.replace(Y, true);
                         List<Value> tmpValues = new ArrayList<>();
-                        if (((PointerType) allocaInst.getType()).getTargetType() instanceof IntegerType &&
-                                ((IntegerType) ((PointerType) allocaInst.getType()).getTargetType()).isI32()) {
+                        if (((PointerType) allocaInst.getType()).getTargetType() instanceof IntegerType) {
                             tmpValues = new ArrayList<>(Collections.nCopies(Y.getPredecessors().size(), ConstInt.ZERO));
                         }
                         PhiInst phiInst = BuildFactory.getInstance().buildPhi(Y, ((PointerType) allocaInst.getType()).getTargetType(), tmpValues);
+                        System.out.println(phiInst);
                         phiAllocaInstHashMap.put(phiInst, allocaInst);
+
                         if (!visited.get(Y)) {
                             visited.replace(Y, true);
                             workList.add(Y);
@@ -138,7 +131,7 @@ public class Mem2Reg implements Pass.IRPass {
         visited.replaceAll((key, value) -> false);
 
         // 对每一个values设置一个value值
-        for (AllocaInst inst : defArraylist) {
+        for (AllocaInst ignored : defArraylist) {
             values.add(ConstInt.ZERO);
         }
         RenameBlock entryBlock = new RenameBlock(function.getList().getBegin().getValue(), null, values);
@@ -154,7 +147,7 @@ public class Mem2Reg implements Pass.IRPass {
 
             // search phi
             for (INode<Instruction, BasicBlock> instructionNode : curBasicBlock.getInstructions()) {
-                if (instructionNode.getValue().getOperator() == Operator.Phi) {
+                if (instructionNode.getValue().getOperator().equals(Operator.Phi)) {
                     PhiInst phiInst = (PhiInst) instructionNode.getValue();
                     if (phiAllocaInstHashMap.containsKey(phiInst)) {
                         phiInst.replaceOperands(curBasicBlock.getPredecessors().indexOf(predBlock),
@@ -172,7 +165,6 @@ public class Mem2Reg implements Pass.IRPass {
                 Instruction instruction = instructionNode.getValue();
                 INode<Instruction, BasicBlock> next = instructionNode.getNext();
 
-                AllocaInst allocaInst;
                 // alloca will be removed
                 switch (instruction.getOperator()) {
                     case Alloca:
@@ -180,33 +172,30 @@ public class Mem2Reg implements Pass.IRPass {
                             instructionNode.removeFromList();
                         }
                         break;
-                    case Load:
+                    case Load: {
                         LoadInst loadInst = (LoadInst) instruction;
                         if (!(loadInst.getOperands().get(0) instanceof AllocaInst)) {
                             instructionNode = next;
                             continue;
                         }
-                        allocaInst = (AllocaInst) loadInst.getOperands().get(0);
-                        if (!(allocaInst.getAllocaType() instanceof IntegerType &&
-                                ((IntegerType) allocaInst.getAllocaType()).isI32())) {
+                        AllocaInst allocaInst = (AllocaInst) loadInst.getOperands().get(0);
+                        if (!(allocaInst.getAllocaType() instanceof IntegerType)) {
                             instructionNode = next;
                             continue;
                         }
-                        if (defMap.containsKey(allocaInst)) {
-                            loadInst.replaceUsedWith(tmpValues.get(defArraylist.indexOf(allocaInst)));
-                            instructionNode.removeFromList();
-                            instruction.removeUseFromOperands();
-                        }
-                        break;
-                    case Store:
+                        loadInst.replaceUsedWith(tmpValues.get(defArraylist.indexOf(allocaInst)));
+                        instructionNode.removeFromList();
+                        instruction.removeUseFromOperands();
+                    }
+                    break;
+                    case Store: {
                         StoreInst storeInst = (StoreInst) instruction;
                         if (!(storeInst.getOperands().get(1) instanceof AllocaInst)) {
                             instructionNode = next;
                             continue;
                         }
-                        allocaInst = (AllocaInst) storeInst.getOperands().get(1);
-                        if (!(allocaInst.getAllocaType() instanceof IntegerType &&
-                                ((IntegerType) allocaInst.getAllocaType()).isI32())) {
+                        AllocaInst allocaInst = (AllocaInst) storeInst.getOperands().get(1);
+                        if (!(allocaInst.getAllocaType() instanceof IntegerType)) {
                             instructionNode = next;
                             continue;
                         }
@@ -214,7 +203,8 @@ public class Mem2Reg implements Pass.IRPass {
                         storeInst.replaceUsedWith(tmpValues.get(defArraylist.indexOf(allocaInst)));
                         instructionNode.removeFromList();
                         instruction.removeUseFromOperands();
-                        break;
+                    }
+                    break;
                     case Phi:
                         PhiInst phiInst = (PhiInst) instruction;
                         if (phiAllocaInstHashMap.containsKey(phiInst)) {
@@ -228,6 +218,18 @@ public class Mem2Reg implements Pass.IRPass {
             for (BasicBlock bb : curBasicBlock.getSuccessors()) {
                 renameBlockStack.push(new RenameBlock(bb, curBasicBlock, tmpValues));
             }
+        }
+    }
+
+    private static class RenameBlock {
+        private final BasicBlock basicBlock;
+        private final BasicBlock predecessor;
+        private final List<Value> values;
+
+        public RenameBlock(BasicBlock basicBlock, BasicBlock predecessor, List<Value> values) {
+            this.basicBlock = basicBlock;
+            this.predecessor = predecessor;
+            this.values = new ArrayList<>(values);
         }
 
     }

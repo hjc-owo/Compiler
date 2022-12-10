@@ -2,6 +2,7 @@ package pass.ir;
 
 import ir.IRLoop;
 import ir.IRModule;
+import ir.analysis.LoopInfo;
 import ir.values.BasicBlock;
 import ir.values.ConstInt;
 import ir.values.Function;
@@ -56,7 +57,7 @@ public class BranchOptimization implements Pass.IRPass{
             vis.add(now);
             now.getSuccessors().forEach(st::push);
         }
-        HashSet<BasicBlock> bbToRemove = new HashSet<>();
+        Set<BasicBlock> bbToRemove = new HashSet<>();
         for (INode<BasicBlock, Function> bbEntry : func.getList()) {
             BasicBlock bb = bbEntry.getValue();
             if (!vis.contains(bb)) {
@@ -105,7 +106,7 @@ public class BranchOptimization implements Pass.IRPass{
                 succ.getPredecessors().remove(bb);
 
                 for (BasicBlock pred : bb.getPredecessors()) {
-                    Instruction predLastInst = (Instruction) (pred.getInstructions().getEnd().getValue());
+                    Instruction predLastInst = pred.getInstructions().getEnd().getValue();
 
                     if (predLastInst.getOperands().size() == 1) {
                         predLastInst.replaceOperands(0, succ);
@@ -201,7 +202,7 @@ public class BranchOptimization implements Pass.IRPass{
 
     private boolean mergeConstCondBr(Function f) {
         f.computeSimpLoopInfo();
-        ir.analysis.LoopInfo loopInfo = f.getLoopInfo();
+        LoopInfo loopInfo = f.getLoopInfo();
         HashSet<BasicBlock> headPreds = new HashSet<>();
         for (IRLoop l : loopInfo.getLoops()) {
             if (l.getHeadPred() != null) {
@@ -220,7 +221,7 @@ public class BranchOptimization implements Pass.IRPass{
             if (brInst instanceof BrInst && brInst.getOperands().size() == 3) {
                 if (brInst.getOperands().get(1) == brInst.getOperands().get(2)) {
                     BasicBlock targetBB = (BasicBlock) (brInst.getOperands().get(1));
-                    HashSet<Integer> indexArr = new HashSet<>();
+                    Set<Integer> indexArr = new HashSet<>();
                     indexArr.add(0);
                     indexArr.add(1);
                     brInst.removeNumberOperand(indexArr);
@@ -237,7 +238,7 @@ public class BranchOptimization implements Pass.IRPass{
                 } else if (brInst.getOperands().get(0) instanceof ConstInt) {
                     int cond = ((ConstInt) brInst.getOperands().get(0)).getValue() > 0 ? 1 : 0;
                     BasicBlock unreachBB = (BasicBlock) (brInst.getOperands().get(1 + cond));
-                    HashSet<Integer> set = new HashSet<>();
+                    Set<Integer> set = new HashSet<>();
                     set.add(0);
                     set.add(cond + 1);
                     brInst.removeNumberOperand(set);
@@ -273,7 +274,7 @@ public class BranchOptimization implements Pass.IRPass{
     }
 
     private void removePredBasicBlock(BasicBlock pred, BasicBlock succ) {
-        HashSet<Integer> predIndexArr = new HashSet<>();
+        Set<Integer> predIndexArr = new HashSet<>();
         predIndexArr.add(succ.getPredecessors().indexOf(pred));
 
         succ.getPredecessors().remove(pred);

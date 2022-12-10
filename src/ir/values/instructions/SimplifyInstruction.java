@@ -14,7 +14,7 @@ public class SimplifyInstruction {
     private static Value simplify(Instruction instruction, int rec) {
         if (instruction instanceof BinaryInst) {
             return simplifyBinaryInst((BinaryInst) instruction, rec);
-        } else if (instruction instanceof ConvInst) {
+        } else if (instruction.isConvInst()) {
             return simplifyConvInst((ConvInst) instruction);
         } else {
             return instruction;

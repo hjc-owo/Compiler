@@ -13,10 +13,7 @@ import ir.values.instructions.terminator.RetInst;
 import utils.IList;
 import utils.INode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BasicBlock extends Value {
     private IList<Instruction, BasicBlock> instructions; // 这个 BasicBlock 中的指令列表
@@ -86,11 +83,20 @@ public class BasicBlock extends Value {
         return domLevel;
     }
 
+    public int getLoopDepth() {
+        return node.getParent().getValue().getLoopInfo().getLoopDepth(this);
+    }
+
     public void refreshReg() {
         for (INode<Instruction, BasicBlock> inode : this.instructions) {
             Instruction inst = inode.getValue();
-            if (!(inst instanceof AliasAnalysis.MemPhi || inst instanceof AliasAnalysis.LoadDepInst ||inst instanceof StoreInst || inst instanceof BrInst || inst instanceof RetInst ||
-                    (inst instanceof CallInst && ((FunctionType) inst.getOperands().get(0).getType()).getReturnType() instanceof VoidType))) {
+            if (!(inst instanceof AliasAnalysis.MemPhi ||
+                    inst instanceof AliasAnalysis.LoadDepInst ||
+                    inst instanceof StoreInst ||
+                    inst instanceof BrInst ||
+                    inst instanceof RetInst ||
+                    (inst instanceof CallInst &&
+                            ((FunctionType) inst.getOperands().get(0).getType()).getReturnType() instanceof VoidType))) {
                 inst.setName("%" + REG_NUMBER++);
             }
         }
@@ -130,7 +136,7 @@ public class BasicBlock extends Value {
     }
 
     public void removeBasicBlockSucc(BasicBlock pred, BasicBlock succ) {
-        HashSet<Integer> idx = new HashSet<>();
+        Set<Integer> idx = new HashSet<>();
         idx.add(succ.getPredecessors().indexOf(pred));
         INode<Instruction, BasicBlock> instNode = succ.getInstructions().getBegin();
         while (instNode != null) {
@@ -158,9 +164,5 @@ public class BasicBlock extends Value {
             Instruction insertInst = instruction.copySelf(replaceMap);
             replaceMap.put(instruction, insertInst);
         }
-    }
-
-    public int getLoopDepth() {
-        return node.getParent().getValue().getLoopInfo().getLoopDepth(this);
     }
 }

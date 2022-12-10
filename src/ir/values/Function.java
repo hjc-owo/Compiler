@@ -226,11 +226,6 @@ public class Function extends Value {
     public static class Argument extends Value {
         private int index;
 
-        public Argument(String name, Type type, int index) {
-            super(name, type);
-            this.index = index;
-        }
-
         public Argument(Type type, int index, boolean isLibraryFunction) {
             super(isLibraryFunction ? "" : "%" + REG_NUMBER++, type);
             this.index = index;

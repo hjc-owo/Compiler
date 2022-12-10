@@ -8,21 +8,21 @@ public class BinaryInst extends Instruction {
 
     public BinaryInst(BasicBlock basicBlock, Operator op, Value left, Value right) {
         super(VoidType.voidType, op, basicBlock);
-        if (op == Operator.Mod) {
-            boolean isRight2Square = false;
-            if (right instanceof ConstInt) {
-                int m = ((ConstInt) right).getValue();
-                if ((m > 0) && ((m & (m - 1)) == 0)) {
-                    isRight2Square = true;
-                }
-            }
-            if (!isRight2Square) {
-                Value tmp = BuildFactory.getInstance().buildBinary(basicBlock, Operator.Div, left, right);
-                tmp = BuildFactory.getInstance().buildBinary(basicBlock, Operator.Mul, right, tmp);
-                this.setOperator(Operator.Sub);
-                right = tmp;
-            }
-        }
+//        if (op == Operator.Mod) {
+//            boolean isRight2Square = false;
+//            if (right instanceof ConstInt) {
+//                int m = ((ConstInt) right).getValue();
+//                if ((m > 0) && ((m & (m - 1)) == 0)) {
+//                    isRight2Square = true;
+//                }
+//            }
+//            if (!isRight2Square) {
+//                Value tmp = BuildFactory.getInstance().buildBinary(basicBlock, Operator.Div, left, right);
+//                tmp = BuildFactory.getInstance().buildBinary(basicBlock, Operator.Mul, right, tmp);
+//                this.setOperator(Operator.Sub);
+//                right = tmp;
+//            }
+//        }
         boolean isLeftI1 = left.getType() instanceof IntegerType && ((IntegerType) left.getType()).isI1();
         boolean isRightI1 = right.getType() instanceof IntegerType && ((IntegerType) right.getType()).isI1();
         boolean isLeftI32 = left.getType() instanceof IntegerType && ((IntegerType) left.getType()).isI32();

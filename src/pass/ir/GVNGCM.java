@@ -92,29 +92,29 @@ public class GVNGCM implements Pass.IRPass {
      */
     private void runGVNBasicBlock(BasicBlock basicBlock) {
         //1、删除相同 phi 指令
-        int predSize = basicBlock.getPredecessors().size();
-        for (INode<Instruction, BasicBlock> instNode : basicBlock.getInstructions()) {
-            Instruction inst = instNode.getValue();
-            if (inst instanceof PhiInst) {
-                INode<Instruction, BasicBlock> nextNode = instNode.getNext();
-                while (nextNode != null && (nextNode.getValue() instanceof PhiInst)) {
-                    Instruction next = nextNode.getValue();
-                    boolean same = true;
-                    for (int num = 0; num < predSize; num++) {
-                        if (!inst.getOperands().get(num).equals(next.getOperands().get(num))) {
-                            same = false;
-                            break;
-                        }
-                    }
-                    if (same) // 如果相同，则删除next指令
-                        replace(inst, next, true);
-                    nextNode = nextNode.getNext();
-                }
-            } else if (inst instanceof AliasAnalysis.MemPhi) {
-            } else {
-                break;
-            }
-        }
+//        int predSize = basicBlock.getPredecessors().size();
+//        for (INode<Instruction, BasicBlock> instNode : basicBlock.getInstructions()) {
+//            Instruction inst = instNode.getValue();
+//            if (inst instanceof PhiInst) {
+//                INode<Instruction, BasicBlock> nextNode = instNode.getNext();
+//                while (nextNode != null && (nextNode.getValue() instanceof PhiInst)) {
+//                    Instruction next = nextNode.getValue();
+//                    boolean same = true;
+//                    for (int num = 0; num < predSize; num++) {
+//                        if (!inst.getOperands().get(num).equals(next.getOperands().get(num))) {
+//                            same = false;
+//                            break;
+//                        }
+//                    }
+//                    if (same) // 如果相同，则删除next指令
+//                        replace(inst, next, true);
+//                    nextNode = nextNode.getNext();
+//                }
+//            } else if (inst instanceof AliasAnalysis.MemPhi) {
+//            } else {
+//                break;
+//            }
+//        }
 
         INode<Instruction, BasicBlock> instNode = basicBlock.getInstructions().getBegin();
         while (!instNode.equals(basicBlock.getInstructions().getEnd())) {

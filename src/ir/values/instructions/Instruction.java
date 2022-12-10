@@ -2,11 +2,13 @@ package ir.values.instructions;
 
 import ir.types.Type;
 import ir.values.*;
-import ir.values.instructions.mem.*;
+import ir.values.instructions.mem.AllocaInst;
+import ir.values.instructions.mem.GEPInst;
+import ir.values.instructions.mem.LoadInst;
+import ir.values.instructions.mem.StoreInst;
 import ir.values.instructions.terminator.BrInst;
 import ir.values.instructions.terminator.CallInst;
 import ir.values.instructions.terminator.RetInst;
-import ir.values.instructions.terminator.TerminatorInst;
 import utils.INode;
 
 import java.util.ArrayList;
@@ -63,6 +65,21 @@ public abstract class Instruction extends User {
         return this.getNode().getParent().getValue();
     }
 
+    public boolean isConvInst() {
+        return this.getOperator().ordinal() >= Operator.Zext.ordinal() &&
+                this.getOperator().ordinal() <= Operator.Bitcast.ordinal();
+    }
+
+    public boolean isMemInst() {
+        return this.getOperator().ordinal() >= Operator.Alloca.ordinal() &&
+                this.getOperator().ordinal() <= Operator.LoadDep.ordinal();
+    }
+
+    public boolean isTerminatorInst() {
+        return this.getOperator().ordinal() >= Operator.Br.ordinal() &&
+                this.getOperator().ordinal() <= Operator.Ret.ordinal();
+    }
+
     public void addInstToBlock(BasicBlock basicBlock) {
         if (basicBlock.getInstructions().getEnd() == null ||
                 (!(basicBlock.getInstructions().getEnd().getValue() instanceof BrInst) &&
@@ -81,7 +98,7 @@ public abstract class Instruction extends User {
         Instruction copyInst = null;
         BuildFactory factory = BuildFactory.getInstance();
         BasicBlock fatherBB2insert = (BasicBlock) replaceMap.get(this.getParent());
-        if (this instanceof MemInst) {
+        if (isMemInst()) {
             switch (this.getOperator()) {
                 case Alloca:
                     copyInst = new AllocaInst(fatherBB2insert, ((AllocaInst) this).isConst(), ((AllocaInst) this).getAllocaType());
@@ -112,7 +129,7 @@ public abstract class Instruction extends User {
                 default:
                     throw new RuntimeException();
             }
-        } else if (this instanceof TerminatorInst) {
+        } else if (isTerminatorInst()) {
             switch (this.getOperator()) {
                 case Br:
                     if (this.getOperands().size() == 1) {
@@ -145,7 +162,7 @@ public abstract class Instruction extends User {
             copyInst = factory.buildBinary(fatherBB2insert, this.getOperator(),
                     findValue(replaceMap, getOperands().get(0)),
                     findValue(replaceMap, getOperands().get(1)));
-        } else if (this instanceof ConvInst) {
+        } else if (isConvInst()) {
             switch (this.getOperator()) {
                 case Zext:
                     copyInst = (Instruction) factory.buildZext(findValue(replaceMap, getOperands().get(0)), fatherBB2insert);

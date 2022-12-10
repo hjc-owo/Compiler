@@ -52,15 +52,6 @@ public class IRLoop {
         return head;
     }
 
-    public BasicBlock getHeadPreOutOfLoop() {
-        for (BasicBlock bb : head.getPredecessors()) {
-            if (!blocks.contains(bb)) {
-                return bb;
-            }
-        }
-        return null;
-    }
-
     public IRLoop getParentLoop() {
         return parentLoop;
     }
@@ -210,36 +201,11 @@ public class IRLoop {
         return (Instruction) instr.getOperands().get(0);
     }
 
-    public Instruction getExitCmp() {
-        if (exitingBlocks.size() != 1) {
-            return null;
-        }
-        Instruction instr = exitingBlocks.iterator().next().getInstructions().getEnd().getValue();
-        if (!(instr.getOperands().get(0) instanceof Instruction)) {
-            return null;
-        }
-        return (Instruction) instr.getOperands().get(0);
-    }
-
     public BasicBlock getSingleLatchBlock() {
         if (latchBlocks.size() != 1) {
             return null;
         }
         return latchBlocks.get(0);
-    }
-
-    public BasicBlock getSingleExitingBlock() {
-        if (exitingBlocks.size() != 1) {
-            return null;
-        }
-        return exitingBlocks.iterator().next();
-    }
-
-    public BasicBlock getSingleExitBlock() {
-        if (exitBlocks.size() != 1) {
-            return null;
-        }
-        return exitBlocks.iterator().next();
     }
 
     public BasicBlock getHeadPred() {

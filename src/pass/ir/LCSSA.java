@@ -71,7 +71,7 @@ public class LCSSA implements Pass.IRPass {
             }
         }
 
-        List<Use> usesList = new ArrayList<>(inst.getUsesList());
+        ArrayList<Use> usesList = new ArrayList<>(inst.getUsesList());
         for (Use use : usesList) {
             BasicBlock userBlock = getUserBlock(use);
             Instruction userInst = (Instruction) use.getUser();
