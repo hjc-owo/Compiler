@@ -75,7 +75,7 @@ public class BinaryInst extends Instruction {
     }
 
     public boolean isAnd() {
-        return this.getOperator() == Operator.And;
+        return this.getOperator() == Operator.And || this.getOperator() == Operator.And2;
     }
 
     public boolean isOr() {
@@ -212,6 +212,9 @@ public class BinaryInst extends Instruction {
                 break;
             case And:
                 s += "and " + this.getOperands().get(0).getType().toString() + " ";
+                break;
+            case And2:
+                s+= "and i32 ";
                 break;
             case Or:
                 s += "or " + this.getOperands().get(0).getType().toString() + " ";

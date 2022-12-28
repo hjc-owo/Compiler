@@ -300,7 +300,7 @@ public class LLVMGenerator {
     }
 
     private void visitVarDef(VarDefNode varDefNode) {
-        // VarDef -> Ident { '[' ConstExp ']' } [ '=' InitVal ]
+        // VarDef -> Ident ({ '[' ConstExp ']' } [ '=' InitVal ] | '=' 'getint' '(' ')')
         String name = varDefNode.getIdent().getContent();
         if (varDefNode.getConstExpNodes().isEmpty()) {
             // is not an array
@@ -324,6 +324,11 @@ public class LLVMGenerator {
             } else {
                 tmpValue = buildFactory.buildVar(curBlock, tmpValue, isConst, tmpType);
                 addSymbol(name, tmpValue);
+                if (varDefNode.isGetint()) {
+                    Value input = getValue(varDefNode.getIdent().getContent());
+                    tmpValue = buildFactory.buildCall(curBlock, (Function) getValue("getint"), new ArrayList<>());
+                    buildFactory.buildStore(curBlock, input, tmpValue);
+                }
             }
         } else {
             // is an array
@@ -888,7 +893,7 @@ public class LLVMGenerator {
 
 
     private void visitMulExp(MulExpNode mulExpNode) {
-        // UnaryExp | UnaryExp ('*' | '/' | '%') MulExp
+        // UnaryExp | UnaryExp ('*' | '/' | '%' | 'bitand') MulExp
         if (isConst) {
             Integer value = saveValue;
             Operator op = saveOp;
@@ -908,6 +913,9 @@ public class LLVMGenerator {
                     case MOD:
                         saveOp = Operator.Mod;
                         break;
+                    case BITAND:
+                        saveOp = Operator.And2;
+                        break;
                     default:
                         throw new RuntimeException("unknown operator");
                 }
@@ -926,8 +934,10 @@ public class LLVMGenerator {
                     tmpOp = Operator.Mul;
                 } else if (mulExpNode.getOperator().getType() == TokenType.DIV) {
                     tmpOp = Operator.Div;
-                } else {
+                } else if (mulExpNode.getOperator().getType() == TokenType.MOD) {
                     tmpOp = Operator.Mod;
+                } else if (mulExpNode.getOperator().getType() == TokenType.BITAND) {
+                    tmpOp = Operator.And2;
                 }
                 visitMulExp(mulExpNode.getMulExpNode());
             }

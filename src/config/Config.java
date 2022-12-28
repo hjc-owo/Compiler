@@ -20,9 +20,9 @@ public class Config {
     /**
      * stages of compilation
      */
-    public static boolean lexer = false;
+    public static boolean lexer = true;
     public static boolean parser = false;
-    public static boolean error = true;
+    public static boolean error = false;
     public static boolean ir = true;
     public static boolean mips = true;
 
@@ -31,8 +31,8 @@ public class Config {
      */
     public static boolean chToStr = true;
     public static boolean addToMul = true;
-    public static boolean GVNGCM = true;
-    public static boolean BranchOptimization = true;
+    public static boolean GVNGCM = false;
+    public static boolean BranchOptimization = false;
 
 
     public static boolean MulAndDivOptimization = true;

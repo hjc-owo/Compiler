@@ -4,16 +4,18 @@ import frontend.Parser;
 import token.Token;
 import utils.IOUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VarDefNode {
     // VarDef -> Ident { '[' ConstExp ']' } | Ident { '[' ConstExp ']' } '=' InitVal
     private Token ident;
     private List<Token> leftBrackets;
-    private List<ConstExpNode> constExpNodes;
+    private List<ConstExpNode> constExpNodes = new ArrayList<>();
     private List<Token> rightBrackets;
     private Token assign;
     private InitValNode initValNode;
+    private boolean isGetint = false;
 
     public VarDefNode(Token ident, List<Token> leftBrackets, List<ConstExpNode> constExpNodes, List<Token> rightBrackets, Token assign, InitValNode initValNode) {
         this.ident = ident;
@@ -22,6 +24,11 @@ public class VarDefNode {
         this.rightBrackets = rightBrackets;
         this.assign = assign;
         this.initValNode = initValNode;
+    }
+
+    public VarDefNode(Token ident) {
+        this.ident = ident;
+        this.isGetint = true;
     }
 
     public Token getIdent() {
@@ -34,6 +41,10 @@ public class VarDefNode {
 
     public InitValNode getInitValNode() {
         return initValNode;
+    }
+
+    public boolean isGetint() {
+        return isGetint;
     }
 
     public void print() {

@@ -21,6 +21,10 @@ public class StoreInst extends MemInst {
 
     @Override
     public String toString() {
-        return "store " + getValue().getType() + " " + getValue().getName() + ", " + getPointer().getType() + " " + getPointer().getName();
+        return "store " +
+                getValue().getType() +
+                " " + getValue().getName() +
+                ", " + getPointer().getType() +
+                " " + getPointer().getName();
     }
 }

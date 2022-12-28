@@ -25,9 +25,8 @@ public class Compiler {
             Parser.getInstance().printParseAns();
         }
 
-        ErrorHandler.getInstance().compUnitError(Parser.getInstance().getCompUnitNode());
-
         if (Config.error) {
+            ErrorHandler.getInstance().compUnitError(Parser.getInstance().getCompUnitNode());
             ErrorHandler.getInstance().printErrors();
         }
 

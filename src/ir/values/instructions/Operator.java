@@ -1,7 +1,7 @@
 package ir.values.instructions;
 
 public enum Operator {
-    Add, Sub, Mul, Div, Mod, Shl, Shr, And, Or, // 二元运算符
+    Add, Sub, Mul, Div, Mod, Shl, Shr, And, And2, Or, // 二元运算符
     Lt, Le, Ge, Gt, Eq, Ne, // 关系运算符
     Zext, Bitcast, // 类型转换
     Alloca, Load, Store, GEP, // 内存操作

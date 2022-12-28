@@ -38,6 +38,7 @@ public class Lexer {
         put("printf", TokenType.PRINTFTK);
         put("return", TokenType.RETURNTK);
         put("void", TokenType.VOIDTK);
+        put("bitand", TokenType.BITAND);
     }};
 
     public void analyze(String content) {

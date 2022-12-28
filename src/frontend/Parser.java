@@ -179,7 +179,7 @@ public class Parser {
     }
 
     private VarDefNode VarDef() {
-        // VarDef -> Ident { '[' ConstExp ']' } [ '=' InitVal ]
+        // VarDef -> Ident ({ '[' ConstExp ']' } [ '=' InitVal ] | '=' 'getint' '(' ')')
         Token ident = match(TokenType.IDENFR);
         List<Token> leftBrackets = new ArrayList<>();
         List<ConstExpNode> constExpNodes = new ArrayList<>();
@@ -193,7 +193,14 @@ public class Parser {
         }
         if (now.getType() == TokenType.ASSIGN) {
             equalToken = match(TokenType.ASSIGN);
-            initValNode = InitVal();
+            if (now.getType() == TokenType.GETINTTK) {
+                Token getIntToken = match(TokenType.GETINTTK);
+                Token leftParenToken = match(TokenType.LPARENT);
+                Token rightParenToken = match(TokenType.RPARENT);
+                return new VarDefNode(ident);
+            } else {
+                initValNode = InitVal();
+            }
         }
         return new VarDefNode(ident, leftBrackets, constExpNodes, rightBrackets, equalToken, initValNode);
     }
@@ -456,7 +463,6 @@ public class Parser {
             Token rightParentToken = match(TokenType.RPARENT);
             return new PrimaryExpNode(leftParentToken, expNode, rightParentToken);
         } else if (now.getType() == TokenType.INTCON) {
-
             NumberNode numberNode = Number();
             return new PrimaryExpNode(numberNode);
         } else {
@@ -517,7 +523,7 @@ public class Parser {
     }
 
     private MulExpNode MulExp() {
-        // MulExp -> UnaryExp | MulExp ('\*' | '/' | '%') UnaryExp
+        // MulExp -> UnaryExp | MulExp ('*' | '/' | '%' | 'bitand' ) UnaryExp
         UnaryExpNode unaryExpNode = UnaryExp();
         Token operator = null;
         MulExpNode mulExpNode = null;
@@ -529,6 +535,9 @@ public class Parser {
             mulExpNode = MulExp();
         } else if (now.getType() == TokenType.MOD) {
             operator = match(TokenType.MOD);
+            mulExpNode = MulExp();
+        } else if (now.getType() == TokenType.BITAND) {
+            operator = match(TokenType.BITAND);
             mulExpNode = MulExp();
         }
         return new MulExpNode(unaryExpNode, operator, mulExpNode);
