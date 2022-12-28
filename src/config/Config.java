@@ -31,20 +31,11 @@ public class Config {
      */
     public static boolean chToStr = true;
     public static boolean addToMul = true;
-    public static boolean DeadCodeElimination = true;
-    public static boolean GlobalVarLocalize = false;
-    public static boolean Mem2Reg = false;
-    public static boolean GVNGCM = false;
-    public static boolean FunctionInline = false;
-    public static boolean LocalArrayPromotion = false;
-    public static boolean MarkConstArray = true;
+    public static boolean GVNGCM = true;
     public static boolean BranchOptimization = true;
-    public static boolean LCSSA = true;
-    public static boolean RemoveUnUseLoop = true;
 
 
     public static boolean MulAndDivOptimization = true;
-    public static boolean RegAllocator = false;
 
     public static void init() throws IOException {
         IOUtils.clear(fileOutPath);
@@ -53,21 +44,6 @@ public class Config {
         IOUtils.delete(fileLlvmIRPath);
         IOUtils.delete(fileMipsPath);
         System.setOut(new PrintStream(stdOutPath));
-//        closeAllPassOptimization();
     }
 
-    private static void closeAllPassOptimization() {
-        DeadCodeElimination = false;
-        GlobalVarLocalize = false;
-        Mem2Reg = false;
-        GVNGCM = false;
-        FunctionInline = false;
-        LocalArrayPromotion = false;
-        MarkConstArray = false;
-        BranchOptimization = false;
-        LCSSA = false;
-        RemoveUnUseLoop = false;
-        MulAndDivOptimization = false;
-        RegAllocator = false;
-    }
 }

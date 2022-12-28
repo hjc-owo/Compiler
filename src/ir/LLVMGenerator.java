@@ -623,29 +623,47 @@ public class LLVMGenerator {
                 //    whileBlock;
                 // }
                 // whileFinalBlock;
+
+                // basicBlock;
+                // if (judgeBlock) {
+                //    goto whileBlock;
+                // } else {
+                //    goto whileFinalBlock;
+                // }
+                // whileBlock;
+                // if (judgeBlock) {
+                //    goto whileBlock;
+                // }
+                // whileFinalBlock;
                 BasicBlock basicBlock = curBlock;
                 BasicBlock tmpContinueBlock = continueBlock;
                 BasicBlock tmpWhileFinalBlock = curWhileFinalBlock;
 
-                BasicBlock judgeBlock = buildFactory.buildBasicBlock(curFunction);
-                buildFactory.buildBr(basicBlock, judgeBlock);
+                BasicBlock judgeBlock1 = buildFactory.buildBasicBlock(curFunction);
+                BasicBlock judgeBlock2 = buildFactory.buildBasicBlock(curFunction);
+                buildFactory.buildBr(basicBlock, judgeBlock1);
 
                 BasicBlock whileBlock = buildFactory.buildBasicBlock(curFunction);
                 curBlock = whileBlock;
-                continueBlock = judgeBlock;
+                continueBlock = judgeBlock2;
 
                 BasicBlock whileFinalBlock = buildFactory.buildBasicBlock(curFunction);
                 curWhileFinalBlock = whileFinalBlock;
 
                 visitStmt(stmtNode.getStmtNodes().get(0));
-                buildFactory.buildBr(curBlock, judgeBlock);
+                buildFactory.buildBr(curBlock, judgeBlock2);
 
                 continueBlock = tmpContinueBlock;
                 curWhileFinalBlock = tmpWhileFinalBlock;
 
                 curTrueBlock = whileBlock;
                 curFalseBlock = whileFinalBlock;
-                curBlock = judgeBlock;
+                curBlock = judgeBlock1;
+                visitCond(stmtNode.getCondNode());
+
+                curTrueBlock = whileBlock;
+                curFalseBlock = whileFinalBlock;
+                curBlock = judgeBlock2;
                 visitCond(stmtNode.getCondNode());
 
                 curBlock = whileFinalBlock;

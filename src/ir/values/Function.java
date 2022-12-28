@@ -96,10 +96,6 @@ public class Function extends Value {
         this.useGlobalVar = useGlobalVar;
     }
 
-    public boolean isHasSideEffect() {
-        return hasSideEffect;
-    }
-
     public Set<GlobalVar> getStoreGVs() {
         return storeGVs;
     }
@@ -110,10 +106,6 @@ public class Function extends Value {
 
     public boolean isSuccessorsNotAllLibrary() {
         return successorsNotAllLibrary;
-    }
-
-    public void setSuccessorsNotAllLibrary(boolean successorsNotAllLibrary) {
-        this.successorsNotAllLibrary = successorsNotAllLibrary;
     }
 
     public Map<BasicBlock, BasicBlock> getIdom() {
