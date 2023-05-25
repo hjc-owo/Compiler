@@ -1,4 +1,4 @@
-# Compiler_BUAA_2022_Autumn
+# Compiler
 
 这是2022秋花叶小姐姐的北航6系编译技术理论课的平时作业。
 
