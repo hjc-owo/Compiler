@@ -37,3 +37,7 @@
 6. 没看到文件？
 
    仔细看看！都在 branch 里！
+
+7. 其他编译器
+
+   - [echo](https://github.com/echo17666/BUAA2022-SysY-Compiler)
