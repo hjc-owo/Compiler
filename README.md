@@ -6,6 +6,8 @@
 
 她写了几篇编译博客，在[编译tag](https://hjc-owo.github.io/tags/compiler/)可以看。
 
+还有一份[软院 llvm 编译器教程](https://buaa-se-compiling.github.io/miniSysY-tutorial/)可以作为参考。
+
 
 
 ## 下面是说明
